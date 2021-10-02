@@ -6,7 +6,7 @@ config = read_json(arg)
 
 
 
-for(j in 1:length(config$DATA_LOCATION)){
+for(k in 1:length(config$DATA_LOCATION)){
 
 iter = config$MCMCITER
 burnin = config$BURNIN
@@ -15,7 +15,7 @@ gamma.prior.b = config$GAMMAPRIORB
 alpha = config$ALPHA
 maxN  = config$MAXN
 
-waiting_times1 <- read.table(config$DATA_LOCATION[[j]], quote="\"", comment.char="")
+waiting_times1 <- read.table(config$DATA_LOCATION[[k]], quote="\"", comment.char="")
 t = waiting_times1$V1
 m = length(t)
 ## Computing the Posterior 
@@ -58,17 +58,7 @@ for( i in 1:iter){
   
   AjrowSums = rowSums(Aj)
   
-  if(sum(AjrowSums==0)>0){
-    error_indx = which(AjrowSums==0)
-  }
-  
-  
   Aj = Aj/AjrowSums
-  
-  if(sum(AjrowSums==0)>0){
-    Aj[error_indx,] = 1/nrow(Aj)
-  }
-  
   
   
   for(j in 1:m){
@@ -137,7 +127,7 @@ for(i in 1:N.est){
   var.stat = c(var.stat, sd(Posterior.samples.lambda[,i]))
 }
 output.data = cbind(var.name,var.est, var.stat )
-
+write.csv(data.frame(output.data), config$SUMMARY_DATA_LOCATION[[k]])
 
 }
 

@@ -1,10 +1,10 @@
-
-
 FROM r-base
 
 RUN mkdir /Workspace
-COPY Initialpackage.R /Workspace
+COPY . /Workspace
+
+RUN Rscript Rprofile/Initialpackage.R
 
 WORKDIR   /Workspace
 
-ENTRYPOINT [ "R" , "Entry.py" ]
+ENTRYPOINT [ "Rscript" , "RunMCMC.R" ]

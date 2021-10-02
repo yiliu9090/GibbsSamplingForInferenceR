@@ -1,6 +1,14 @@
 library(DirichletReg)
 library(json.lite)
-t = waiting_times5$V1
+
+arg = commandArgs(trailingOnly=TRUE)[1]
+
+for(j in 1:length(config$DATA_LOCATION)){
+
+
+
+config = read_json(arg)
+waiting_times1 <- read.table(config$DATA_LOCATION[[j]], quote="\"", comment.char="")
 m = length(t)
 ## Computing the Posterior 
 iter = 100
@@ -100,4 +108,7 @@ for( i in 1:iter){
     }
     
   }
+}
+
+
 }

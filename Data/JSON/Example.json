@@ -1,0 +1,12 @@
+
+{ 
+    "NAME":["Example1"],
+    "DATA_LOCATION":["Data/ExampleData/waiting_times1.txt"],
+    "MAXN":50,
+    "GAMMAPRIORA": 2,
+    "GAMMAPRIORB": 2, 
+    "ALPHA": 1,
+    "MCMCITER": 100,
+    "BURNIN":10,
+    "SUMMARY_DATA_LOCATION":["Data/Output/SUMMARY_1.csv"]
+}

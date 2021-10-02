@@ -23,7 +23,7 @@ m = length(t)
 
 #Initialize the value 
 N.Posterior = 2 
-lambda.Posterior = c(2,2)
+lambda.Posterior = c(2,5)
 A.Posterior = c(0.5, 0.5)
 I.j.Posterior = which(rmultinom(m, 1, A.Posterior) ==1, arr.ind =T)[,1] #classes
 
@@ -39,7 +39,6 @@ Posterior.samples.lambda = matrix(0,(iter - burnin), maxN)
 
 ## Gibbs sampling
 for( i in 1:iter){
-  
   
   ## sample lambda give I(j) and t
   for(lam in 1:N.Posterior){
@@ -106,28 +105,33 @@ for( i in 1:iter){
     }
     
   }
-}#done with MCMC
-probcomput = rep(0,maxN)
-for(i in 1:maxN){
-  probcomput[i] = mean(Posterior.sampes.N==i)
-}
-N.est = which.max(probcomput) - 1
-var.name = c('N')
-var.est  = c(N.est)
-var.stat = c(max(probcomput))
 
-for(i in 1:N.est){
-  var.name = c(var.name, paste0("Alpha", as.character(i)))
-  var.est  = c(var.est , mean(Posterior.samples.A[,i]))
-  var.stat = c(var.stat, sd(Posterior.samples.A[,i]))
-}
-for(i in 1:N.est){
-  var.name = c(var.name, paste0("Lambda", as.character(i)))
-  var.est  = c(var.est , mean(Posterior.samples.lambda[,i]))
-  var.stat = c(var.stat, sd(Posterior.samples.lambda[,i]))
-}
-output.data = cbind(var.name,var.est, var.stat )
-write.csv(data.frame(output.data), config$SUMMARY_DATA_LOCATION[[k]])
+  }#done with MCMC
+  probcomput = rep(0,maxN)
+
+
+  for(i in 1:maxN){
+    probcomput[i] = mean(Posterior.sampes.N==i)
+  }
+
+
+  N.est = which.max(probcomput) - 1
+  var.name = c('N')
+  var.est  = c(N.est)
+  var.stat = c(max(probcomput))
+
+  for(i in 1:N.est){
+    var.name = c(var.name, paste0("Alpha", as.character(i)))
+    var.est  = c(var.est , mean(Posterior.samples.A[,i]))
+    var.stat = c(var.stat, sd(Posterior.samples.A[,i]))
+  }
+  for(i in 1:N.est){
+    var.name = c(var.name, paste0("Lambda", as.character(i)))
+    var.est  = c(var.est , mean(Posterior.samples.lambda[,i]))
+    var.stat = c(var.stat, sd(Posterior.samples.lambda[,i]))
+  }
+  output.data = cbind(var.name,var.est, var.stat )
+  write.csv(data.frame(output.data), config$SUMMARY_DATA_LOCATION[[k]])
 
 }
 

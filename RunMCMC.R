@@ -1,6 +1,5 @@
 library(DirichletReg)
-library(json.lite)
-
+library(jsonlite)
 arg = commandArgs(trailingOnly=TRUE)[1]
 config = read_json(arg)
 
@@ -34,8 +33,8 @@ I.j.Posterior = which(rmultinom(m, 1, A.Posterior) ==1, arr.ind =T)[,1] #classes
 #set seed
 
 Posterior.sampes.N = rep(0, (iter - burnin))
-Posterior.samples.A = matrix(0,(iter - burnin), 50)
-Posterior.samples.lambda = matrix(0,(iter - burnin), 50)
+Posterior.samples.A = matrix(0,(iter - burnin), maxN)
+Posterior.samples.lambda = matrix(0,(iter - burnin), maxN)
 
 
 ## Gibbs sampling
@@ -78,7 +77,7 @@ for( i in 1:iter){
   
   ## Sample A 
   A.Dirichlet.Posterior = NULL
-  N.Posterior.update = N.Posterior
+
   for(lam in 1:N.Posterior){
     A.Dirichlet.Posterior = c(A.Dirichlet.Posterior, sum(I.j.Posterior == lam))
   }
@@ -89,7 +88,7 @@ for( i in 1:iter){
   lambda.Posterior = lambda.Posterior[A.Dirichlet.Posterior>0]
 
 
-  if(N.Posterior< 50){
+  if(N.Posterior< maxN){
     A.Dirichlet.Posterior = c(A.Dirichlet.Posterior,alpha)
     N.Posterior = N.Posterior + 1
     lambda.Posterior = c(lambda.Posterior, rgamma(1, gamma.prior.a , rate= gamma.prior.b))
@@ -117,7 +116,29 @@ for( i in 1:iter){
     }
     
   }
+}#done with MCMC
+probcomput = rep(0,maxN)
+for(i in 1:maxN){
+  probcomput[i] = mean(Posterior.sampes.N==i)
 }
+N.est = which.max(probcomput) - 1
+var.name = c('N')
+var.est  = c(N.est)
+var.stat = c(max(probcomput))
+
+for(i in 1:N.est){
+  var.name = c(var.name, paste0("Alpha", as.character(i)))
+  var.est  = c(var.est , mean(Posterior.samples.A[,i]))
+  var.stat = c(var.stat, sd(Posterior.samples.A[,i]))
+}
+for(i in 1:N.est){
+  var.name = c(var.name, paste0("Lambda", as.character(i)))
+  var.est  = c(var.est , mean(Posterior.samples.lambda[,i]))
+  var.stat = c(var.stat, sd(Posterior.samples.lambda[,i]))
+}
+output.data = cbind(var.name,var.est, var.stat )
 
 
 }
+
+

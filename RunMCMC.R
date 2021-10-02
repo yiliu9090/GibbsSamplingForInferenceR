@@ -2,17 +2,24 @@ library(DirichletReg)
 library(json.lite)
 
 arg = commandArgs(trailingOnly=TRUE)[1]
+config = read_json(arg)
+
+
+
 
 for(j in 1:length(config$DATA_LOCATION)){
 
+iter = config$MCMCITER
+burnin = config$BURNIN
+gamma.prior.a = config$GAMMAPRIORA
+gamma.prior.b = config$GAMMAPRIORB
+alpha = config$ALPHA
 
-
-config = read_json(arg)
 waiting_times1 <- read.table(config$DATA_LOCATION[[j]], quote="\"", comment.char="")
+t = waiting_times1$V1
 m = length(t)
 ## Computing the Posterior 
-iter = 100
-burnin = 10
+
 
 #Initialize the value 
 N.Posterior = 2 
@@ -21,26 +28,17 @@ A.Posterior = c(0.5, 0.5)
 I.j.Posterior = which(rmultinom(m, 1, A.Posterior) ==1, arr.ind =T)[,1] #classes
 
 #Initialize Prior 
-gamma.prior.a = 2 
-gamma.prior.b = 2 
-alpha = 1
+
 
 #set seed
-set.seed(20210608)
 
 Posterior.sampes.N = rep(0, (iter - burnin))
 Posterior.samples.A = matrix(0,(iter - burnin), 50)
 Posterior.samples.lambda = matrix(0,(iter - burnin), 50)
 
-ptm <- proc.time()
 
 ## Gibbs sampling
 for( i in 1:iter){
-  
-  if(i%%1000==0){
-    print(i)
-  }
-  
   
   
   ## sample lambda give I(j) and t
@@ -83,6 +81,8 @@ for( i in 1:iter){
   }
   N.Posterior = sum(A.Dirichlet.Posterior>0)
   A.Dirichlet.Posterior = A.Dirichlet.Posterior[A.Dirichlet.Posterior>0]
+  lambda.Posterior = lambda.Posterior[A.Dirichlet.Posterior>0]
+
   
   if(N.Posterior< 50){
     A.Dirichlet.Posterior = c(A.Dirichlet.Posterior,alpha/(m))

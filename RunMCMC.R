@@ -1,4 +1,5 @@
 library(DirichletReg)
+library(json.lite)
 t = waiting_times5$V1
 m = length(t)
 ## Computing the Posterior 

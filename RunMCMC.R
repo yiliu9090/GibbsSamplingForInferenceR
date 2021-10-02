@@ -14,6 +14,7 @@ burnin = config$BURNIN
 gamma.prior.a = config$GAMMAPRIORA
 gamma.prior.b = config$GAMMAPRIORB
 alpha = config$ALPHA
+maxN  = config$MAXN
 
 waiting_times1 <- read.table(config$DATA_LOCATION[[j]], quote="\"", comment.char="")
 t = waiting_times1$V1
@@ -47,6 +48,8 @@ for( i in 1:iter){
     gamma.posterior.b = gamma.prior.b + sum(t*(I.j.Posterior==lam))
     lambda.Posterior[lam] = rgamma(1, gamma.posterior.a , rate= gamma.posterior.b)
   }  
+
+
   ## Sample I(j) for each data 
   Aj = matrix(0,m,N.Posterior)
   for(lam in 1:N.Posterior){
@@ -79,14 +82,17 @@ for( i in 1:iter){
   for(lam in 1:N.Posterior){
     A.Dirichlet.Posterior = c(A.Dirichlet.Posterior, sum(I.j.Posterior == lam))
   }
+
   N.Posterior = sum(A.Dirichlet.Posterior>0)
+
   A.Dirichlet.Posterior = A.Dirichlet.Posterior[A.Dirichlet.Posterior>0]
   lambda.Posterior = lambda.Posterior[A.Dirichlet.Posterior>0]
 
-  
+
   if(N.Posterior< 50){
-    A.Dirichlet.Posterior = c(A.Dirichlet.Posterior,alpha/(m))
+    A.Dirichlet.Posterior = c(A.Dirichlet.Posterior,alpha)
     N.Posterior = N.Posterior + 1
+    lambda.Posterior = c(lambda.Posterior, rgamma(1, gamma.prior.a , rate= gamma.prior.b))
   }else{
     A.Dirichlet.Posterior = c(A.Dirichlet.Posterior) #a hard cut off so that all the results can be saved
   }
@@ -94,14 +100,17 @@ for( i in 1:iter){
   
   A.Posterior = rdirichlet(1,A.Dirichlet.Posterior)
   
+  o = order(A.Posterior, decreasing= TRUE)
+  A.Posterior = A.Posterior[o]
+  lambda.Posterior = lambda.Posterior[o]
   
   #collect Samples
   if(i > burnin){
     
     Posterior.sampes.N[i - burnin] = N.Posterior
-    if(N.Posterior< 50){
-      Posterior.samples.A[(i-burnin),] = c(A.Posterior,rep(0,50-N.Posterior))
-      Posterior.samples.lambda[(i-burnin),] = c(lambda.Posterior,rep(0,50-length(lambda.Posterior)))
+    if(N.Posterior< maxN){
+      Posterior.samples.A[(i-burnin),] = c(A.Posterior,rep(0,maxN-N.Posterior))
+      Posterior.samples.lambda[(i-burnin),] = c(lambda.Posterior,rep(0,maxN-length(lambda.Posterior)))
     }else{
       Posterior.samples.A[(i-burnin),] = A.Posterior
       Posterior.samples.lambda[(i-burnin),] = lambda.Posterior

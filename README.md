@@ -1,2 +1,2 @@
-# GibbsSamplingForInferenceR
+# Gibbs Sampling For Inference R
  

@@ -137,7 +137,10 @@ for( i in 1:iter){
     var.stat = c(var.stat, sd(Posterior.samples.lambda[,i]))
   }
   output.data = cbind(var.name,var.est, var.stat )
-  write.csv(data.frame(output.data), config$SUMMARY_DATA_LOCATION[[k]])
+  output.data = data.frame(output.data)
+  output.data$var.est = as.numeric(output.data$var.est)
+  output.data$var.stat = as.numeric(output.data$var.stat)
+  write.csv(output.data, config$SUMMARY_DATA_LOCATION[[k]])
 
 }
 

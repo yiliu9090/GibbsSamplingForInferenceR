@@ -22,9 +22,9 @@ m = length(t)
 
 
 #Initialize the value 
-N.Posterior = 2 
-lambda.Posterior = c(2,3)
-A.Posterior = c(0.9, 0.1)
+N.Posterior = 1 
+lambda.Posterior = c(2)
+A.Posterior = c(1)
 I.j.Posterior = which(rmultinom(m, 1, A.Posterior) ==1, arr.ind =T)[,1] #classes
 
 #Initialize Prior 
@@ -68,8 +68,13 @@ for( i in 1:iter){
   A.Dirichlet.Posterior = NULL
 
   for(lam in 1:N.Posterior){
+    if(sum(I.j.Posterior == lam)>0){
+      A.Dirichlet.Posterior = c(A.Dirichlet.Posterior, sum(I.j.Posterior == lam)+1)
+    }
+    else{
+      A.Dirichlet.Posterior = c(A.Dirichlet.Posterior, 0)
+    }
     
-    A.Dirichlet.Posterior = c(A.Dirichlet.Posterior, sum(I.j.Posterior == lam))
   }
 
   N.Posterior = sum(A.Dirichlet.Posterior>0)

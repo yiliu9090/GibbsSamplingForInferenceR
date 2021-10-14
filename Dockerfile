@@ -1,10 +1,13 @@
 FROM r-base
 
 RUN mkdir /Workspace
-COPY . /Workspace
+COPY Rprofile /Workspace
+COPY RunMCMC.R /Workspace 
 
-RUN Rscript Rprofile/Initialpackage.R
+WORKDIR  /Workspace
 
-WORKDIR   /Workspace
+RUN Rscript Initialpackage.R
+
+
 
 ENTRYPOINT [ "Rscript" , "RunMCMC.R" ]

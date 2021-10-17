@@ -14,7 +14,7 @@ burnin = config$BURNIN
 gamma.prior.a = config$GAMMAPRIORA
 gamma.prior.b = config$GAMMAPRIORB
 
-if(length(config$ALPHA[[k]])>1){
+if(length(config$ALPHA)>1){
   alpha = config$ALPHA[[k]]
 }else{
   alpha = config$ALPHA

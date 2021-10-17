@@ -5,8 +5,9 @@
     "MAXN":50,
     "GAMMAPRIORA": 2,
     "GAMMAPRIORB": 2, 
-    "ALPHA": 0.1,
-    "MCMCITER": 2000,
-    "BURNIN":100,
-    "SUMMARY_DATA_LOCATION":["Data/Output/SUMMARY_1.csv"]
+    "ALPHA": [0.01],
+    "MCMCITER": 100000,
+    "BURNIN":50000,
+    "SUMMARY_DATA_LOCATION":["Data/Output/SUMMARY_1.csv"],
+    "LIKELIHOOD_PLOT":["Data/Output/PLOT_LIKELIHOOD_1.pdf"]
 }

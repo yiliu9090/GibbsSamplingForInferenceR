@@ -10,9 +10,16 @@ for(k in 1:length(config$DATA_LOCATION)){
 
 iter = config$MCMCITER
 burnin = config$BURNIN
+
 gamma.prior.a = config$GAMMAPRIORA
 gamma.prior.b = config$GAMMAPRIORB
-alpha = config$ALPHA
+
+if(length(config$ALPHA[[k]])>1){
+  alpha = config$ALPHA[[k]]
+}else{
+  alpha = config$ALPHA
+}
+
 maxN  = config$MAXN
 
 waiting_times1 <- read.table(config$DATA_LOCATION[[k]], quote="\"", comment.char="")
@@ -36,6 +43,9 @@ Posterior.sampes.N = rep(0, (iter - burnin))
 Posterior.samples.A = matrix(0,(iter - burnin), maxN)
 Posterior.samples.lambda = matrix(0,(iter - burnin), maxN)
 
+
+#Likelihood data 
+likelihood_changes = NULL
 
 ## Gibbs sampling
 for( i in 1:iter){
@@ -94,10 +104,21 @@ for( i in 1:iter){
   
   A.Posterior = rdirichlet(1,A.Dirichlet.Posterior)
   
-  o = order(A.Posterior, decreasing= TRUE)
+  o = order(lambda.Posterior, decreasing= TRUE)
   A.Posterior = A.Posterior[o]
   lambda.Posterior = lambda.Posterior[o]
   
+
+  if(i%%1000 ==0){
+    L = A.Posterior[1]*lambda.Posterior[1]*exp(-t*lambda.Posterior[1])
+    if(N.Posterior>=2){
+      for(lam in 2:N.Posterior){
+        L = L + A.Posterior[lam]*lambda.Posterior[lam]*exp(-t*lambda.Posterior[lam])
+      }
+    }
+  likelihood_changes =c(likelihood_changes, log(sum(L)))
+  }
+
   #collect Samples
   if(i > burnin){
     
@@ -115,6 +136,10 @@ for( i in 1:iter){
   }#done with MCMC
   probcomput = rep(0,maxN)
 
+
+  pdf(config$LIKELIHOOD_PLOT[[k]])
+  plot((1:length(likelihood_changes))*1000,likelihood_changes)
+  dev.off()
 
   for(i in 1:maxN){
     probcomput[i] = mean(Posterior.sampes.N==i)

@@ -17,9 +17,9 @@ gamma.prior.a = config$GAMMAPRIORA
 gamma.prior.b = config$GAMMAPRIORB
 
 if(length(config$ALPHA)>1){
-  alpha = config$ALPHA[[k]]
+  alpha = config$ALPHA[[k]][[1]]
 }else{
-  alpha = config$ALPHA
+  alpha = config$ALPHA[[1]]
 }
 
 maxN  = config$MAXN
@@ -66,11 +66,11 @@ for( i in 1:iter){
     Aj[,lam] = A.Posterior[lam]*lambda.Posterior[lam]*exp(-t*lambda.Posterior[lam])
   }
   
-  
-  AjrowSums = rowSums(Aj)
-  
+  AjrowSums = rowSums(Aj/rowMaxs(Aj))
+ 
   Aj = Aj/AjrowSums
   
+
   
   for(j in 1:m){
     I.j.Posterior[j] = which(rmultinom(1, 1, Aj[j,]) ==1, arr.ind =T)[,1]
@@ -102,11 +102,9 @@ for( i in 1:iter){
   }else{
     A.Dirichlet.Posterior = c(A.Dirichlet.Posterior) #a hard cut off so that all the results can be saved
   }
-  
-  
   A.Posterior = rdirichlet(1,A.Dirichlet.Posterior)
-  
-  o = order(lambda.Posterior, decreasing= TRUE)
+
+  o = order(lambda.Posterior[1:N.Posterior], decreasing= TRUE)
   A.Posterior = A.Posterior[o]
   lambda.Posterior = lambda.Posterior[o]
   

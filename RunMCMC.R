@@ -1,5 +1,7 @@
 library(DirichletReg)
 library(jsonlite)
+library(matrixStats)
+
 arg = commandArgs(trailingOnly=TRUE)[1]
 config = read_json(arg)
 

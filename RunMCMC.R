@@ -109,7 +109,7 @@ for( i in 1:iter){
   lambda.Posterior = lambda.Posterior[o]
   
 
-  if(i%%1000 ==0){
+  if(i%%100 ==0){
     L = A.Posterior[1]*lambda.Posterior[1]*exp(-t*lambda.Posterior[1])
     if(N.Posterior>=2){
       for(lam in 2:N.Posterior){

@@ -104,12 +104,11 @@ for( i in 1:iter){
   }
   A.Posterior = rdirichlet(1,A.Dirichlet.Posterior)
 
-  o = order(lambda.Posterior[1:N.Posterior], decreasing= TRUE)
+  o = order(A.Posterior, decreasing= TRUE)
   A.Posterior = A.Posterior[o]
   lambda.Posterior = lambda.Posterior[o]
-  
 
-  if(i%%100 ==0){
+  if(i%%1000 ==0){
     L = A.Posterior[1]*lambda.Posterior[1]*exp(-t*lambda.Posterior[1])
     if(N.Posterior>=2){
       for(lam in 2:N.Posterior){

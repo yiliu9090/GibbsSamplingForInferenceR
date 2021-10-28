@@ -8,6 +8,7 @@ RUN apt-get install -y libgsl0-dev
 
 COPY Rprofile /Workspace
 COPY RunMCMC.R /Workspace 
+COPY gsl.cpp /Workspace
 
 WORKDIR  /Workspace
 

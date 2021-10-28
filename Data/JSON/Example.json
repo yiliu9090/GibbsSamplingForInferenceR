@@ -1,14 +1,16 @@
 
 { 
-    "NAME":["Example1"],
-    "DATA_LOCATION":["Data/ExampleData/waiting_times1.txt",
-        "Data/ExampleData/waiting_times2.txt"],
+    "NAME":["Example1","Example2"],
+    "DATA_LOCATION":["Data/ExampleData/waiting_times1.txt","Data/ExampleData/waiting_times2.txt"],
     "MAXN":50,
-    "GAMMAPRIORA": 5,
-    "GAMMAPRIORB": 5, 
-    "ALPHA": [0.01,0.01],
+    "GAMMAPRIORA": 3,
+    "GAMMAPRIORB": 2, 
+    "ALPHA": [0.005,0.005],
     "MCMCITER": 100,
     "BURNIN":50,
     "SUMMARY_DATA_LOCATION":["Data/Output/SUMMARY_1.csv","Data/Output/SUMMARY_2.csv"],
-    "LIKELIHOOD_PLOT":["Data/Output/PLOT_LIKELIHOOD_1.pdf","Data/Output/PLOT_LIKELIHOOD_2.pdf"]
+    "LIKELIHOOD_PLOT":["Data/Output/PLOT_LIKELIHOOD_1.pdf","Data/Output/PLOT_LIKELIHOOD_2.pdf"],
+    "DUMP":1,
+    "DUMP_LOCATION":["Data/Output/OUTPUT_1.RData","Data/Output/OUTPUT_2.RData"]
+
 }

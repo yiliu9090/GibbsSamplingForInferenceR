@@ -1,6 +1,10 @@
 library(DirichletReg)
 library(jsonlite)
 library(matrixStats)
+library(Rcpp)
+sourceCpp("gsl.cpp")
+
+#ptm <- proc.time()
 
 arg = commandArgs(trailingOnly=TRUE)[1]
 config = read_json(arg)
@@ -66,16 +70,24 @@ for( i in 1:iter){
     Aj[,lam] = A.Posterior[lam]*lambda.Posterior[lam]*exp(-t*lambda.Posterior[lam])
   }
   
-  AjrowSums = rowSums(Aj/rowMaxs(Aj))
+
+  Aj = Aj/rowMaxs(Aj)
+
+  AjrowSums = rowSums(Aj)
  
   Aj = Aj/AjrowSums
   
+  #print(Aj)
+  D = gsl_mmm(Aj)
 
+  I.j.Posterior = which(D==1,arr.ind = TRUE)[,2]
   
-  for(j in 1:m){
-    I.j.Posterior[j] = which(rmultinom(1, 1, Aj[j,]) ==1, arr.ind =T)[,1]
-  }
   
+  #for(j in 1:m){
+  #  I.j.Posterior[j] = which(rmultinom(1, 1, Aj[j,]) ==1, arr.ind =T)[,1]
+  #}
+
+  #print(max(I.j.Posterior))
   ## Sample A 
   A.Dirichlet.Posterior = NULL
 
@@ -115,7 +127,7 @@ for( i in 1:iter){
         L = L + A.Posterior[lam]*lambda.Posterior[lam]*exp(-t*lambda.Posterior[lam])
       }
     }
-  likelihood_changes =c(likelihood_changes, log(sum(L)))
+  likelihood_changes =c(likelihood_changes, sum(log(L)))
   }
 
   #collect Samples
@@ -133,6 +145,7 @@ for( i in 1:iter){
   }
 
   }#done with MCMC
+
   probcomput = rep(0,maxN)
 
 
@@ -165,7 +178,13 @@ for( i in 1:iter){
   output.data$var.est = as.numeric(output.data$var.est)
   output.data$var.stat = as.numeric(output.data$var.stat)
   write.csv(output.data, config$SUMMARY_DATA_LOCATION[[k]])
+  
+  if(config$DUMP){
+    save(Posterior.sampes.N, Posterior.samples.A,Posterior.samples.lambda,  file = config$DUMP_LOCATION[[k]])
+  }
+
 
 }
 
+#print(proc.time() - ptm)
 

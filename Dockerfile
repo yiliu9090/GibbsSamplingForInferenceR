@@ -1,9 +1,10 @@
 FROM r-base
 
 RUN mkdir /Workspace
-COPY . /Workspace
+COPY Rprofile /Workspace
+COPY RunMCMC.R /Workspace
 
-RUN Rscript Rprofile/Initialpackage.R
+RUN Rscript /Workspace/Initialpackage.R
 
 WORKDIR   /Workspace
 

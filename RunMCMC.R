@@ -1,5 +1,11 @@
 library(DirichletReg)
 library(jsonlite)
+library(matrixStats)
+library(Rcpp)
+sourceCpp("gsl.cpp")
+
+#ptm <- proc.time()
+
 arg = commandArgs(trailingOnly=TRUE)[1]
 config = read_json(arg)
 
@@ -10,9 +16,16 @@ for(k in 1:length(config$DATA_LOCATION)){
 
 iter = config$MCMCITER
 burnin = config$BURNIN
+
 gamma.prior.a = config$GAMMAPRIORA
 gamma.prior.b = config$GAMMAPRIORB
-alpha = config$ALPHA
+
+if(length(config$ALPHA)>1){
+  alpha = config$ALPHA[[k]][[1]]
+}else{
+  alpha = config$ALPHA[[1]]
+}
+
 maxN  = config$MAXN
 
 waiting_times1 <- read.table(config$DATA_LOCATION[[k]], quote="\"", comment.char="")
@@ -22,9 +35,9 @@ m = length(t)
 
 
 #Initialize the value 
-N.Posterior = 2 
-lambda.Posterior = c(2,3)
-A.Posterior = c(0.9, 0.1)
+N.Posterior = 1 
+lambda.Posterior = c(2)
+A.Posterior = c(1)
 I.j.Posterior = which(rmultinom(m, 1, A.Posterior) ==1, arr.ind =T)[,1] #classes
 
 #Initialize Prior 
@@ -36,6 +49,9 @@ Posterior.sampes.N = rep(0, (iter - burnin))
 Posterior.samples.A = matrix(0,(iter - burnin), maxN)
 Posterior.samples.lambda = matrix(0,(iter - burnin), maxN)
 
+
+#Likelihood data 
+likelihood_changes = NULL
 
 ## Gibbs sampling
 for( i in 1:iter){
@@ -54,22 +70,35 @@ for( i in 1:iter){
     Aj[,lam] = A.Posterior[lam]*lambda.Posterior[lam]*exp(-t*lambda.Posterior[lam])
   }
   
-  
+
+  Aj = Aj/rowMaxs(Aj)
+
   AjrowSums = rowSums(Aj)
-  
+ 
   Aj = Aj/AjrowSums
   
+  #print(Aj)
+  D = gsl_mmm(Aj)
+
+  I.j.Posterior = which(D==1,arr.ind = TRUE)[,2]
   
-  for(j in 1:m){
-    I.j.Posterior[j] = which(rmultinom(1, 1, Aj[j,]) ==1, arr.ind =T)[,1]
-  }
   
+  #for(j in 1:m){
+  #  I.j.Posterior[j] = which(rmultinom(1, 1, Aj[j,]) ==1, arr.ind =T)[,1]
+  #}
+
+  #print(max(I.j.Posterior))
   ## Sample A 
   A.Dirichlet.Posterior = NULL
 
   for(lam in 1:N.Posterior){
+    if(sum(I.j.Posterior == lam)>0){
+      A.Dirichlet.Posterior = c(A.Dirichlet.Posterior, sum(I.j.Posterior == lam)+1)
+    }
+    else{
+      A.Dirichlet.Posterior = c(A.Dirichlet.Posterior, 0)
+    }
     
-    A.Dirichlet.Posterior = c(A.Dirichlet.Posterior, sum(I.j.Posterior == lam))
   }
 
   N.Posterior = sum(A.Dirichlet.Posterior>0)
@@ -85,14 +114,22 @@ for( i in 1:iter){
   }else{
     A.Dirichlet.Posterior = c(A.Dirichlet.Posterior) #a hard cut off so that all the results can be saved
   }
-  
-  
   A.Posterior = rdirichlet(1,A.Dirichlet.Posterior)
-  
+
   o = order(A.Posterior, decreasing= TRUE)
   A.Posterior = A.Posterior[o]
   lambda.Posterior = lambda.Posterior[o]
-  
+
+  if(i%%1000 ==0){
+    L = A.Posterior[1]*lambda.Posterior[1]*exp(-t*lambda.Posterior[1])
+    if(N.Posterior>=2){
+      for(lam in 2:N.Posterior){
+        L = L + A.Posterior[lam]*lambda.Posterior[lam]*exp(-t*lambda.Posterior[lam])
+      }
+    }
+  likelihood_changes =c(likelihood_changes, sum(log(L)))
+  }
+
   #collect Samples
   if(i > burnin){
     
@@ -108,8 +145,13 @@ for( i in 1:iter){
   }
 
   }#done with MCMC
+
   probcomput = rep(0,maxN)
 
+
+  pdf(config$LIKELIHOOD_PLOT[[k]])
+  plot((1:length(likelihood_changes))*1000,likelihood_changes)
+  dev.off()
 
   for(i in 1:maxN){
     probcomput[i] = mean(Posterior.sampes.N==i)
@@ -132,8 +174,17 @@ for( i in 1:iter){
     var.stat = c(var.stat, sd(Posterior.samples.lambda[,i]))
   }
   output.data = cbind(var.name,var.est, var.stat )
-  write.csv(data.frame(output.data), config$SUMMARY_DATA_LOCATION[[k]])
+  output.data = data.frame(output.data)
+  output.data$var.est = as.numeric(output.data$var.est)
+  output.data$var.stat = as.numeric(output.data$var.stat)
+  write.csv(output.data, config$SUMMARY_DATA_LOCATION[[k]])
+  
+  if(config$DUMP){
+    save(Posterior.sampes.N, Posterior.samples.A,Posterior.samples.lambda,  file = config$DUMP_LOCATION[[k]])
+  }
+
 
 }
 
+#print(proc.time() - ptm)
 

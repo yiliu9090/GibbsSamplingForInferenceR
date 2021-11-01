@@ -1,2 +1,5 @@
 install.packages("jsonlite")
 install.packages("DirichletReg")
+install.packages("matrixStats")
+install.packages("Rcpp")
+install.packages("RcppGSL")

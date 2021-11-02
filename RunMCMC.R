@@ -121,6 +121,7 @@ for( i in 1:iter){
       for(u in 1:N.Posterior){
         if(Slambda < lambda.Posterior[u]*SepFac & Slambda >lambda.Posterior[u]/SepFac){
           ApproveI = 0
+          
         }
       }
     }

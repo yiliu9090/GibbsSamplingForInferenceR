@@ -63,7 +63,12 @@ for( i in 1:iter){
   for(lam in 1:N.Posterior){
     gamma.posterior.a = (gamma.prior.a+sum(I.j.Posterior==lam))
     gamma.posterior.b = gamma.prior.b + sum(t*(I.j.Posterior==lam))
-    lambda.Posterior[lam] = rgamma(1, gamma.posterior.a , rate= gamma.posterior.b)
+    
+    if(lam >=2){
+      lambda.Posterior[lam] = rgamma(1, gamma.posterior.a , rate= gamma.posterior.b)
+    }else{
+      lambda.Posterior[lam] = rgamma(1, gamma.posterior.a , rate= gamma.posterior.b)
+    }
   }  
 
 

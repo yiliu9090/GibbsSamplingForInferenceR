@@ -51,6 +51,7 @@ Posterior.sampes.N = rep(0, (iter - burnin))
 Posterior.samples.A = matrix(0,(iter - burnin), maxN)
 Posterior.samples.lambda = matrix(0,(iter - burnin), maxN)
 
+NewLambdaI = NULL
 
 #Likelihood data 
 likelihood_changes = NULL
@@ -114,17 +115,18 @@ for( i in 1:iter){
   if(N.Posterior< maxN){
     ApproveI = 0 
     Trials = 0 
-    while(ApproveI == 0 | Trials < 50){
+    
+    while(ApproveI == 0 & Trials < 50){
       Slambda = rgamma(1, gamma.prior.a , rate= gamma.prior.b)# suggested lambda 
       Trials = Trials + 1
       ApproveI = 1
       for(u in 1:N.Posterior){
         if(Slambda < lambda.Posterior[u]*SepFac & Slambda >lambda.Posterior[u]/SepFac){
           ApproveI = 0
-          
         }
       }
     }
+    
     if(Trials < 50){
       A.Dirichlet.Posterior = c(A.Dirichlet.Posterior,alpha)
       N.Posterior = N.Posterior + 1
@@ -156,6 +158,13 @@ for( i in 1:iter){
   #collect Samples
   if(i > burnin){
     
+    if(Trials < 50){
+      NewLambdaI = c(NewLambdaI,1)
+    }
+    else{
+      NewLambdaI = c(NewLambdaI,0)
+    }
+
     Posterior.sampes.N[i - burnin] = N.Posterior
     if(N.Posterior< maxN){
       Posterior.samples.A[(i-burnin),] = c(A.Posterior,rep(0,maxN-N.Posterior))
@@ -179,7 +188,6 @@ for( i in 1:iter){
   for(i in 1:maxN){
     probcomput[i] = mean(Posterior.sampes.N==i)
   }
-
 
   N.est = which.max(probcomput) - 1
   var.name = c('N')

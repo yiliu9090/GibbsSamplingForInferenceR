@@ -5,9 +5,9 @@
         "Data/ExampleData/waiting_times3.txt"
        ],
     "MAXN":50,
-    "GAMMAPRIORA": 3,
+    "GAMMAPRIORA": 5,
     "GAMMAPRIORB": 2, 
-    "ALPHA": [0.06
+    "ALPHA": [0.0001
      ],
     "MCMCITER": 10000,
     "BURNIN":5000,
@@ -18,5 +18,5 @@
     "DUMP":1,
     "DUMP_LOCATION":["Data/Output/ALL_3.RData"
         ],
-    "SEPARATION_FACTOR":[2.0]
+    "SEPARATION_FACTOR":[5.0]
 }

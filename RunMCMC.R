@@ -28,6 +28,8 @@ if(length(config$ALPHA)>1){
 
 maxN  = config$MAXN
 
+SepFac = config$SEPARATION_FACTOR[[k]][[1]]
+
 waiting_times1 <- read.table(config$DATA_LOCATION[[k]], quote="\"", comment.char="")
 t = waiting_times1$V1
 m = length(t)
@@ -66,6 +68,8 @@ for( i in 1:iter){
 
   ## Sample I(j) for each data 
   Aj = matrix(0,m,N.Posterior)
+
+
   for(lam in 1:N.Posterior){
     Aj[,lam] = A.Posterior[lam]*lambda.Posterior[lam]*exp(-t*lambda.Posterior[lam])
   }
@@ -108,11 +112,29 @@ for( i in 1:iter){
 
 
   if(N.Posterior< maxN){
-    A.Dirichlet.Posterior = c(A.Dirichlet.Posterior,alpha)
-    N.Posterior = N.Posterior + 1
-    lambda.Posterior = c(lambda.Posterior, rgamma(1, gamma.prior.a , rate= gamma.prior.b))
+    ApproveI = 0 
+    Trials = 0 
+    while(ApproveI == 0 | Trials < 50){
+      Slambda = rgamma(1, gamma.prior.a , rate= gamma.prior.b)# suggested lambda 
+      Trials = Trials + 1
+      ApproveI = 1
+      for(u in 1:N.Posterior){
+        if(Slambda < lambda.Posterior[u]*SepFac & Slambda >lambda.Posterior[u]/SepFac){
+          ApproveI = 0
+        }
+      }
+    }
+    if(Trials < 50){
+      A.Dirichlet.Posterior = c(A.Dirichlet.Posterior,alpha)
+      N.Posterior = N.Posterior + 1
+      lambda.Posterior = c(lambda.Posterior, Slambda)
+    }
+    else{
+       A.Dirichlet.Posterior = A.Dirichlet.Posterior #a hard cut off so that all the results can be saved
+    }
+    
   }else{
-    A.Dirichlet.Posterior = c(A.Dirichlet.Posterior) #a hard cut off so that all the results can be saved
+    A.Dirichlet.Posterior = A.Dirichlet.Posterior #a hard cut off so that all the results can be saved
   }
   A.Posterior = rdirichlet(1,A.Dirichlet.Posterior)
 

@@ -18,5 +18,5 @@
     "DUMP":1,
     "DUMP_LOCATION":["Data/Output/ALL_3.RData"
         ],
-    "SEPARATION_FACTOR":[5.0]
+    "SEPARATION_FACTOR":[1.50]
 }

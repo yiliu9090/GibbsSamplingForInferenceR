@@ -65,7 +65,27 @@ for( i in 1:iter){
     gamma.posterior.b = gamma.prior.b + sum(t*(I.j.Posterior==lam))
     
     if(lam >=2){
-      lambda.Posterior[lam] = rgamma(1, gamma.posterior.a , rate= gamma.posterior.b)
+
+    ApproveI = 0 
+    Trials = 0 
+    
+    while(ApproveI == 0 & Trials < 50){
+      Slambda = rgamma(1, gamma.prior.a , rate= gamma.prior.b)# suggested lambda 
+      Trials = Trials + 1
+      ApproveI = 1
+      for(u in 1:(lam-1)){
+        if(Slambda < lambda.Posterior[u]*SepFac & Slambda >lambda.Posterior[u]/SepFac){
+          ApproveI = 0
+        }
+      }
+    }
+    if(Trials < 50){
+      lambda.Posterior[lam] = Slambda
+    }else{
+      lambda.Posterior[lam] = sample(c(min(lambda.Posterior[1:(lam-1)])/SepFac,max(lambda.Posterior[1:(lam-1)])*SepFac),1,c(0.5,0.5))
+    }
+    
+    
     }else{
       lambda.Posterior[lam] = rgamma(1, gamma.posterior.a , rate= gamma.posterior.b)
     }

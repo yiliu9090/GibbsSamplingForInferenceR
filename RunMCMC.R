@@ -9,7 +9,7 @@ sourceCpp("gsl.cpp")
 arg = commandArgs(trailingOnly=TRUE)[1]
 config = read_json(arg)
 
-
+set.seed(config$SEED)
 
 
 for(k in 1:length(config$DATA_LOCATION)){

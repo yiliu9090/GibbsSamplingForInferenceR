@@ -18,5 +18,6 @@
     "DUMP":1,
     "DUMP_LOCATION":["Data/Output/p0.5n20000.RData"
         ],
-    "SEPARATION_FACTOR":[1.00]
+    "SEPARATION_FACTOR":[1.00],
+    "SEED":2021
 }

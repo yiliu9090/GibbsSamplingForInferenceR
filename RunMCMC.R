@@ -38,7 +38,7 @@ m = length(t)
 
 #Initialize the value 
 N.Posterior = 1 
-lambda.Posterior = c(2)
+lambda.Posterior = rgamma(1, gamma.prior.a , rate= gamma.prior.b)
 A.Posterior = c(1)
 I.j.Posterior = which(rmultinom(m, 1, A.Posterior) ==1, arr.ind =T)[,1] #classes
 
@@ -70,7 +70,7 @@ for( i in 1:iter){
     Trials = 0 
     
     while(ApproveI == 0 & Trials < 50){
-      Slambda = rgamma(1, gamma.prior.a , rate= gamma.prior.b)# suggested lambda 
+      Slambda = rgamma(1, gamma.posterior.a , rate= gamma.posterior.b)# suggested lambda 
       Trials = Trials + 1
       ApproveI = 1
       for(u in 1:(lam-1)){
@@ -146,7 +146,7 @@ for( i in 1:iter){
       Trials = Trials + 1
       ApproveI = 1
       for(u in 1:N.Posterior){
-        if(Slambda < lambda.Posterior[u]*SepFac & Slambda >lambda.Posterior[u]/SepFac){
+        if(Slambda =< lambda.Posterior[u]*SepFac & Slambda >= lambda.Posterior[u]/SepFac){
           ApproveI = 0
         }
       }
@@ -170,7 +170,7 @@ for( i in 1:iter){
   A.Posterior = A.Posterior[o]
   lambda.Posterior = lambda.Posterior[o]
 
-  if(i%%1000 ==0){
+  if(i%%100 ==0){
     L = A.Posterior[1]*lambda.Posterior[1]*exp(-t*lambda.Posterior[1])
     if(N.Posterior>=2){
       for(lam in 2:N.Posterior){
@@ -207,7 +207,7 @@ for( i in 1:iter){
 
 
   pdf(config$LIKELIHOOD_PLOT[[k]])
-  plot((1:length(likelihood_changes))*1000,likelihood_changes)
+  plot((1:length(likelihood_changes))*100,likelihood_changes)
   dev.off()
 
   for(i in 1:maxN){

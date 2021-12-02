@@ -6,11 +6,11 @@
        ],
     "MAXN":50,
     "GAMMAPRIORA": 2,
-    "GAMMAPRIORB": 0.5, 
+    "GAMMAPRIORB": 1, 
     "ALPHA": [0.001
      ],
-    "MCMCITER": 100000,
-    "BURNIN":50000,
+    "MCMCITER": 2000,
+    "BURNIN":1000,
     "SUMMARY_DATA_LOCATION":["Data/Output/p0.5n20000.csv"
        ],
     "LIKELIHOOD_PLOT":["Data/Output/p0.5n20000.pdf"

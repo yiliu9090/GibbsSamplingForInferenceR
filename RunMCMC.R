@@ -44,9 +44,6 @@ I.j.Posterior = which(rmultinom(m, 1, A.Posterior) ==1, arr.ind =T)[,1] #classes
 
 #Initialize Prior 
 
-
-#set seed
-
 Posterior.sampes.N = rep(0, (iter - burnin))
 Posterior.samples.A = matrix(0,(iter - burnin), maxN)
 Posterior.samples.lambda = matrix(0,(iter - burnin), maxN)
@@ -132,14 +129,16 @@ for( i in 1:iter){
   }
 
   N.Posterior = sum(A.Dirichlet.Posterior>0)
+  ix = which(A.Dirichlet.Posterior>0)
+  A.Dirichlet.Posterior = A.Dirichlet.Posterior[ix]
+  lambda.Posterior = lambda.Posterior[ix]
 
-  A.Dirichlet.Posterior = A.Dirichlet.Posterior[A.Dirichlet.Posterior>0]
-  lambda.Posterior = lambda.Posterior[A.Dirichlet.Posterior>0]
-
+  AddGamma = 0
 
   if(N.Posterior< maxN){
     ApproveI = 0 
     Trials = 0 
+    
     
     while(ApproveI == 0 & Trials < 50){
       Slambda = rgamma(1, gamma.prior.a , rate= gamma.prior.b)# suggested lambda 
@@ -153,6 +152,7 @@ for( i in 1:iter){
     }
     
     if(Trials < 50){
+      AddGamma = 1 #Indicating that one lambda is added.
       A.Dirichlet.Posterior = c(A.Dirichlet.Posterior,alpha)
       N.Posterior = N.Posterior + 1
       lambda.Posterior = c(lambda.Posterior, Slambda)
@@ -164,11 +164,30 @@ for( i in 1:iter){
   }else{
     A.Dirichlet.Posterior = A.Dirichlet.Posterior #a hard cut off so that all the results can be saved
   }
+
+  #Reorder lambda so we do not have switch spaces problem 
   A.Posterior = rdirichlet(1,A.Dirichlet.Posterior)
 
-  o = order(A.Posterior, decreasing= TRUE)
-  A.Posterior = A.Posterior[o]
-  lambda.Posterior = lambda.Posterior[o]
+  if(AddGamma == 1){
+    #Add a gamma
+    Nnow = sum(lambda.Posterior>0)
+    o = order(lambda.Posterior[1:(Nnow-1)], decreasing= TRUE)
+    A.PosteriorSort = A.Posterior[1:(Nnow-1)]
+
+    A.Posterior[1:(Nnow-1)] = A.PosteriorSort[o]
+    lambda.PosteriorSort = lambda.Posterior[1:(Nnow-1)]
+    lambda.Posterior[1:(Nnow-1)] = lambda.PosteriorSort[o]
+  }else{
+  
+    #No lambda added
+    o = order(lambda.Posterior, decreasing= TRUE)
+    A.Posterior = A.Posterior[o]
+    lambda.Posterior = lambda.Posterior[o]
+
+  }
+  
+  
+  
 
   if(i%%100 ==0){
     L = A.Posterior[1]*lambda.Posterior[1]*exp(-t*lambda.Posterior[1])

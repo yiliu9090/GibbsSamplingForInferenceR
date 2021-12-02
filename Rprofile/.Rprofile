@@ -1,4 +1,4 @@
-cat(".Rprofile: Setting UK repositoryn")
+cat(".Rprofile: Setting repositoryn")
 
 r = getOption("repos")  # hard code the UK repo for CRAN
 

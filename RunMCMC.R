@@ -249,6 +249,14 @@ for(k in 1:length(config$DATA_LOCATION)){
       var.est  = c(var.est , mean(Posterior.samples.lambda[,i]))
       var.stat = c(var.stat, sd(Posterior.samples.lambda[,i]))
     }
+    pdf('Data/Output/Histplot.pdf')
+    ix = which(Posterior.sampes.N==(N.est+1))
+    hist(Posterior.samples.lambda[ix])
+    dev.off()
+   
+
+
+
     output.data = cbind(var.name,var.est, var.stat )
     output.data = data.frame(output.data)
     output.data$var.est = as.numeric(output.data$var.est)

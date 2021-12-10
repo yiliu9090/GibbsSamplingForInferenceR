@@ -10,12 +10,12 @@
     "MCMCITER": 2000,
     "BURNIN":1000,
     "SUMMARY_DATA_LOCATION":[
-        "Data/Output/A0_00001_0_1AND1.csv"],
+        "Data/Output/A0_1_0_1AND1.csv"],
     "LIKELIHOOD_PLOT":[
-        "Data/Output/A0_00001_0_1AND1.pdf"],
+        "Data/Output/A0_1_0_1AND1.pdf"],
     "DUMP":1,
     "DUMP_LOCATION":[
-        "Data/Output/A0_00001_0_1AND1.RData"],
-    "SEPARATION_FACTOR":[4.00],
+        "Data/Output/A0_1_0_1AND1.RData"],
+    "SEPARATION_FACTOR":[5.00],
     "SEED":2021
 }

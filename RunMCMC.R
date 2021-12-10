@@ -11,6 +11,10 @@ config = read_json(arg)
 
 set.seed(config$SEED)
 
+#This is 
+
+AlphaSize = length(config$ALPHA)
+print(AlphaSize)
 
 for(k in 1:length(config$DATA_LOCATION)){
 
@@ -20,11 +24,7 @@ for(k in 1:length(config$DATA_LOCATION)){
   gamma.prior.a = config$GAMMAPRIORA
   gamma.prior.b = config$GAMMAPRIORB
 
-  if(length(config$ALPHA)>1){
-    alpha = config$ALPHA[[k]][[1]]
-  }else{
-    alpha = config$ALPHA[[1]]
-  }
+
 
   maxN  = config$MAXN
 
@@ -34,6 +34,13 @@ for(k in 1:length(config$DATA_LOCATION)){
   t = waiting_times1$V1
   m = length(t)
   ## Computing the Posterior 
+
+  if(length(config$ALPHA)>1){
+    alpha = config$ALPHA[[k]][[1]]
+  }else{
+    alpha = config$ALPHA[[1]]
+  }
+
 
 
   #Initialize the value 
@@ -251,7 +258,7 @@ for(k in 1:length(config$DATA_LOCATION)){
     }
     pdf('Data/Output/Histplot.pdf')
     ix = which(Posterior.sampes.N==(N.est+1))
-    hist(Posterior.samples.lambda[ix])
+    hist(Posterior.samples.lambda[ix], breaks = 100)
     dev.off()
    
 
@@ -270,5 +277,4 @@ for(k in 1:length(config$DATA_LOCATION)){
 
 } 
 
-#print(proc.time() - ptm)
 

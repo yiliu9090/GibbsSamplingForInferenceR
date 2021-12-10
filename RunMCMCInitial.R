@@ -9,7 +9,7 @@ sourceCpp("gsl.cpp")
 arg = commandArgs(trailingOnly=TRUE)[1]
 config = read_json(arg)
 
-set.seed(config$SEED)
+
 
 
 for(k in 1:length(config$DATA_LOCATION)){
@@ -38,11 +38,14 @@ m = length(t)
 
 #Initialize the value 
 N.Posterior = 1 
-lambda.Posterior = rgamma(1, gamma.prior.a , rate= gamma.prior.b)
+lambda.Posterior = c(2)
 A.Posterior = c(1)
 I.j.Posterior = which(rmultinom(m, 1, A.Posterior) ==1, arr.ind =T)[,1] #classes
 
 #Initialize Prior 
+
+
+#set seed
 
 Posterior.sampes.N = rep(0, (iter - burnin))
 Posterior.samples.A = matrix(0,(iter - burnin), maxN)
@@ -62,27 +65,7 @@ for( i in 1:iter){
     gamma.posterior.b = gamma.prior.b + sum(t*(I.j.Posterior==lam))
     
     if(lam >=2){
-
-    ApproveI = 0 
-    Trials = 0 
-    
-    while(ApproveI == 0 & Trials < 50){
-      Slambda = rgamma(1, gamma.posterior.a , rate= gamma.posterior.b)# suggested lambda 
-      Trials = Trials + 1
-      ApproveI = 1
-      for(u in 1:(lam-1)){
-        if(Slambda < lambda.Posterior[u]*SepFac & Slambda >lambda.Posterior[u]/SepFac){
-          ApproveI = 0
-        }
-      }
-    }
-    if(Trials < 50){
-      lambda.Posterior[lam] = Slambda
-    }else{
-      lambda.Posterior[lam] = sample(c(min(lambda.Posterior[1:(lam-1)])/SepFac,max(lambda.Posterior[1:(lam-1)])*SepFac),1,c(0.5,0.5))
-    }
-    
-    
+      lambda.Posterior[lam] = rgamma(1, gamma.posterior.a , rate= gamma.posterior.b)
     }else{
       lambda.Posterior[lam] = rgamma(1, gamma.posterior.a , rate= gamma.posterior.b)
     }
@@ -129,30 +112,27 @@ for( i in 1:iter){
   }
 
   N.Posterior = sum(A.Dirichlet.Posterior>0)
-  ix = which(A.Dirichlet.Posterior>0)
-  A.Dirichlet.Posterior = A.Dirichlet.Posterior[ix]
-  lambda.Posterior = lambda.Posterior[ix]
 
-  AddGamma = 0
+  A.Dirichlet.Posterior = A.Dirichlet.Posterior[A.Dirichlet.Posterior>0]
+  lambda.Posterior = lambda.Posterior[A.Dirichlet.Posterior>0]
+
 
   if(N.Posterior< maxN){
     ApproveI = 0 
     Trials = 0 
-    
     
     while(ApproveI == 0 & Trials < 50){
       Slambda = rgamma(1, gamma.prior.a , rate= gamma.prior.b)# suggested lambda 
       Trials = Trials + 1
       ApproveI = 1
       for(u in 1:N.Posterior){
-        if(Slambda <= lambda.Posterior[u]*SepFac & Slambda >= lambda.Posterior[u]/SepFac){
+        if(Slambda < lambda.Posterior[u]*SepFac & Slambda >lambda.Posterior[u]/SepFac){
           ApproveI = 0
         }
       }
     }
     
     if(Trials < 50){
-      AddGamma = 1 #Indicating that one lambda is added.
       A.Dirichlet.Posterior = c(A.Dirichlet.Posterior,alpha)
       N.Posterior = N.Posterior + 1
       lambda.Posterior = c(lambda.Posterior, Slambda)
@@ -164,32 +144,13 @@ for( i in 1:iter){
   }else{
     A.Dirichlet.Posterior = A.Dirichlet.Posterior #a hard cut off so that all the results can be saved
   }
-
-  #Reorder lambda so we do not have switch spaces problem 
   A.Posterior = rdirichlet(1,A.Dirichlet.Posterior)
 
-  if(AddGamma == 1){
-    #Add a gamma
-    Nnow = sum(lambda.Posterior>0)
-    o = order(lambda.Posterior[1:(Nnow-1)], decreasing= TRUE)
-    A.PosteriorSort = A.Posterior[1:(Nnow-1)]
+  o = order(A.Posterior, decreasing= TRUE)
+  A.Posterior = A.Posterior[o]
+  lambda.Posterior = lambda.Posterior[o]
 
-    A.Posterior[1:(Nnow-1)] = A.PosteriorSort[o]
-    lambda.PosteriorSort = lambda.Posterior[1:(Nnow-1)]
-    lambda.Posterior[1:(Nnow-1)] = lambda.PosteriorSort[o]
-  }else{
-  
-    #No lambda added
-    o = order(lambda.Posterior, decreasing= TRUE)
-    A.Posterior = A.Posterior[o]
-    lambda.Posterior = lambda.Posterior[o]
-
-  }
-  
-  
-  
-
-  if(i%%100 ==0){
+  if(i%%1000 ==0){
     L = A.Posterior[1]*lambda.Posterior[1]*exp(-t*lambda.Posterior[1])
     if(N.Posterior>=2){
       for(lam in 2:N.Posterior){
@@ -226,7 +187,7 @@ for( i in 1:iter){
 
 
   pdf(config$LIKELIHOOD_PLOT[[k]])
-  plot((1:length(likelihood_changes))*100,likelihood_changes)
+  plot((1:length(likelihood_changes))*1000,likelihood_changes)
   dev.off()
 
   for(i in 1:maxN){

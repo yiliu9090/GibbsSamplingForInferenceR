@@ -321,8 +321,9 @@ for(k in 1:length(config$DATA_LOCATION)){
       #Check upper and lower bound of other values 
       for(i in 1:N.est){
         for(j in 1:N.est){
+          M = mean(Posterior.samples.lambda[ix,i])
           if(j != i){
-            if(mean(Posterior.samples.lambda[ix,i]) < checkupper[j] & mean(Posterior.samples.lambda[ix,i]) > checklower[j]){
+            if( M < checkupper[j] & M > checklower[j]){
               AcceptInd = 0
             }
           }
@@ -342,11 +343,11 @@ for(k in 1:length(config$DATA_LOCATION)){
   } #Done with all alpha's
 
   #Best estimates of N
-  if(sum(AcceptInd) == 0){
+  if(sum(Accepted) == 0){
     Bestix = 1
     Best.N = NEST[1]
   }else{
-    Bestix = which.max(AcceptInd==1)
+    Bestix = which.max(Accepted==1)
     Best.N = NEST[Bestix]
   }
   SettingsChar = paste0("GAMMAAB",as.character(gamma.prior.a),"_",as.character(gamma.prior.b),"MCMC",as.character(iter),"BURN",as.character(burnin))

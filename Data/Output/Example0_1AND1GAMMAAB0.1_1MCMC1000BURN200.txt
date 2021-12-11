@@ -1,0 +1,7 @@
+We run the following experiment setting:
+Our Gamma prior is given as Gamma 0.1 and 1
+We run MCMC for 1000 iterations, with a burn in of 200
+The best alpha 0.001
+The best N is 1
+The best A estimates are NaN ( NA ) ,
+The best lambda estimates are  NaN ( NA ) ,

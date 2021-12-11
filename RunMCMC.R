@@ -252,6 +252,8 @@ for(k in 1:length(config$DATA_LOCATION)){
       
       }#done with recording the MCMC samples
 
+
+
     }#done with MCMC
 
     #Summarize the data for that particular alpha
@@ -350,16 +352,16 @@ for(k in 1:length(config$DATA_LOCATION)){
   SettingsChar = paste0("GAMMAAB",as.character(gamma.prior.a),"_",as.character(gamma.prior.b),"MCMC",as.character(iter),"BURN",as.character(burnin))
   logfileName = paste0(config$DUMP_LOCATION[[k]],config$NAME[[k]],SettingsChar,'.txt')
 
-  ix = which(PosteriorSampleListN[[Bestix]]== Best.N)
-  BestA = PosteriorSampleListA[[alphanumber]][ix,]
-  BestL = PosteriorSampleListL[[alphanumber]][ix,]
+  ix = which(PosteriorSampleListN[[Bestix]]== (Best.N+1))
+  BestA = PosteriorSampleListA[[Bestix]][ix,]
+  BestL = PosteriorSampleListL[[Bestix]][ix,]
 
   fileConn    = file(logfileName)
   SettingLine = paste('We run the following experiment setting:')
   Gammaline   = paste('Our Gamma prior is given as Gamma', as.character(gamma.prior.a),'and', as.character(gamma.prior.b))
   MCMCline    = paste('We run MCMC for',as.character(iter),'iterations, with a burn in of',as.character(burnin))
   Alphaline   = paste('The best alpha', as.character(config$ALPHA[Bestix]))
-  Nline       = paste('The best N is', as.character(Best.N))
+  Nline       = paste('The best N is', as.character(Best.N),"(",as.character(mean(PosteriorSampleListN[[Bestix]]== (Best.N+1))),")")
   Aline       = 'The best A estimates are'
   Lline       = 'The best lambda estimates are '
   for(i in 1:Best.N){
@@ -371,7 +373,7 @@ for(k in 1:length(config$DATA_LOCATION)){
   close(fileConn)
 
   CSVFileName = paste0(config$DUMP_LOCATION[[k]],config$NAME[[k]],SettingsChar,'FullEst.csv')
-
+  print(CSVFileName)
   output.data = cbind(var.name,var.est, var.stat,var.up,var.low,var.alpha)
   output.data = data.frame(output.data)
   output.data$var.est  = as.numeric(output.data$var.est)

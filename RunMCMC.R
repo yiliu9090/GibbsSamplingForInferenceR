@@ -4,8 +4,9 @@ library(matrixStats)
 library(Rcpp)
 sourceCpp("gsl.cpp")
 
-#V2: 
-#ptm <- proc.time()
+#V2: moving across
+
+
 
 arg = commandArgs(trailingOnly=TRUE)[1]
 config = read_json(arg)
@@ -14,11 +15,15 @@ set.seed(config$SEED)
 
 #This is 
 
+nsd = config$NSD
+
 AlphaSize = length(config$ALPHA)
 
 if(length(config$NAME)!=length(config$DATA_LOCATION)){
   stop("This is an error message")
 }
+
+
 
 
 for(k in 1:length(config$DATA_LOCATION)){
@@ -46,26 +51,39 @@ for(k in 1:length(config$DATA_LOCATION)){
   #  alpha = config$ALPHA[[1]]
   #}
 
+  PosteriorSampleListN = list()
+  PosteriorSampleListA = list()
+  PosteriorSampleListL = list()
 
-
-  #Initialize the value 
-  N.Posterior = 1 
-  lambda.Posterior = rgamma(1, gamma.prior.a , rate= gamma.prior.b)
-  A.Posterior = c(1)
-  I.j.Posterior = which(rmultinom(m, 1, A.Posterior) ==1, arr.ind =T)[,1] #classes
-
-  #Initialize Prior 
-
-  Posterior.sampes.N = rep(0, (iter - burnin))
-  Posterior.samples.A = matrix(0,(iter - burnin), maxN)
-  Posterior.samples.lambda = matrix(0,(iter - burnin), maxN)
-
-  NewLambdaI = NULL
+  Accepted = rep(0,AlphaSize)
 
   #Likelihood data 
   likelihood_changes = NULL
 
+  #
+  NEST     = NULL #This is to keep an record of all the N.estimates
+  var.name = NULL
+  var.est  = NULL
+  var.stat = NULL
+  var.up   = NULL
+  var.low  = NULL
+  var.alpha= NULL
+
   for(alphanumber in 1:AlphaSize){
+
+    #Initialize the value 
+    N.Posterior = 1 
+    lambda.Posterior = rgamma(1, gamma.prior.a , rate= gamma.prior.b)
+    A.Posterior = c(1)
+    I.j.Posterior = which(rmultinom(m, 1, A.Posterior) ==1, arr.ind =T)[,1] #classes
+
+    #Initialize Prior 
+
+    Posterior.sampes.N = rep(0, (iter - burnin))
+    Posterior.samples.A = matrix(0,(iter - burnin), maxN)
+    Posterior.samples.lambda = matrix(0,(iter - burnin), maxN)
+
+    NewLambdaI = NULL
 
     alpha = config$ALPHA[[alphanumber]][[1]]
   
@@ -236,53 +254,139 @@ for(k in 1:length(config$DATA_LOCATION)){
 
     }#done with MCMC
 
-    #Summary_data
-
-  }
+    #Summarize the data for that particular alpha
     probcomput = rep(0,maxN)
+    SettingsChar = paste0("GAMMAAB",as.character(gamma.prior.a),"_",as.character(gamma.prior.b),"ALPHA",as.character(alpha),"MCMC",as.character(iter),"BURN",as.character(burnin),"LIKELIHOOD")
+    likelihoodplot_name = paste0(config$DUMP_LOCATION[[k]],config$NAME[[k]],SettingsChar,'.pdf' )
 
-
-    pdf(config$LIKELIHOOD_PLOT[[k]])
+    #Likelihood plots
+    pdf(likelihoodplot_name)
     plot((1:length(likelihood_changes))*100,likelihood_changes)
     dev.off()
 
+    #find the right set of values
     for(i in 1:maxN){
       probcomput[i] = mean(Posterior.sampes.N==i)
     }
 
+
     N.est = which.max(probcomput) - 1
-    var.name = c('N')
-    var.est  = c(N.est)
-    var.stat = c(max(probcomput))
+
+    NEST = c(NEST, N.est)
+
+    var.name = c(var.name, 'N')
+    var.est  = c(var.est , N.est)
+    var.stat = c(var.stat, max(probcomput))
+    var.up   = c(var.up , 0)
+    var.low  = c(var.low, 0)
+    var.alpha = c(var.alpha, alpha)
+
+    ix = which(Posterior.sampes.N == (N.est+1))
 
     for(i in 1:N.est){
-      var.name = c(var.name, paste0("Alpha", as.character(i)))
-      var.est  = c(var.est , mean(Posterior.samples.A[,i]))
-      var.stat = c(var.stat, sd(Posterior.samples.A[,i]))
+      var.name = c(var.name, paste0("A", as.character(i)))
+      var.est  = c(var.est , mean(Posterior.samples.A[ix,i]))
+      var.stat = c(var.stat, sd(Posterior.samples.A[ix,i]))
+      var.up   = c(var.up,   mean(Posterior.samples.A[ix,i]) + nsd*sd(Posterior.samples.A[ix,i]))
+      var.low  = c(var.low,  mean(Posterior.samples.A[ix,i]) - nsd*sd(Posterior.samples.A[ix,i]))
+      var.alpha = c(var.alpha, alpha)
     }
+    lambda_samples = NULL 
     for(i in 1:N.est){
+      lambda_samples = c(lambda_samples, Posterior.samples.lambda[ix,i]) #lambda samples
       var.name = c(var.name, paste0("Lambda", as.character(i)))
-      var.est  = c(var.est , mean(Posterior.samples.lambda[,i]))
-      var.stat = c(var.stat, sd(Posterior.samples.lambda[,i]))
+      var.est  = c(var.est , mean(Posterior.samples.lambda[ix,i]))
+      var.stat = c(var.stat, sd(Posterior.samples.lambda[ix,i]))
+      var.up   = c(var.up,   mean(Posterior.samples.lambda[ix,i]) + nsd*sd(Posterior.samples.lambda[ix,i]))
+      var.low  = c(var.low,  mean(Posterior.samples.lambda[ix,i]) - nsd*sd(Posterior.samples.lambda[ix,i]))
+      var.alpha = c(var.alpha, alpha)
     }
-    pdf('Data/Output/Histplot.pdf')
-    ix = which(Posterior.sampes.N==(N.est+1))
-    hist(Posterior.samples.lambda[ix], breaks = 100)
+
+    PosteriorSampleListN[[alphanumber]] = Posterior.sampes.N
+    PosteriorSampleListA[[alphanumber]] = Posterior.samples.A
+    PosteriorSampleListL[[alphanumber]] = Posterior.samples.lambda
+
+    AcceptInd = 1
+    checkupper = mean(Posterior.samples.lambda[ix,i]) + nsd*sd(Posterior.samples.lambda[ix,i])
+    checklower = mean(Posterior.samples.lambda[ix,i]) - nsd*sd(Posterior.samples.lambda[ix,i]) 
+
+    if(N.est > 2){
+      #compute upper and lower bound 
+      for(i in 2:N.est){
+        checkupper = c(checkupper, mean(Posterior.samples.lambda[ix,i]) + nsd*sd(Posterior.samples.lambda[ix,i]))
+        checklower = c(checklower, mean(Posterior.samples.lambda[ix,i]) - nsd*sd(Posterior.samples.lambda[ix,i]))
+      }
+      #Check upper and lower bound of other values 
+      for(i in 1:N.est){
+        for(j in 1:N.est){
+          if(j != i){
+            if(mean(Posterior.samples.lambda[ix,i]) < checkupper[j] & mean(Posterior.samples.lambda[ix,i]) > checklower[j]){
+              AcceptInd = 0
+            }
+          }
+        }
+      }
+    }
+
+
+    Accepted[alphanumber] = AcceptInd
+    SettingsChar = paste0("GAMMAAB",as.character(gamma.prior.a),"_",as.character(gamma.prior.b),"ALPHA",as.character(alpha),"MCMC",as.character(iter),"BURN",as.character(burnin),"HIST")
+    hist_name = paste0(config$DUMP_LOCATION[[k]],config$NAME[[k]],SettingsChar,'.pdf' )
+    pdf(hist_name)
+    hist(lambda_samples,breaks= 100)
     dev.off()
-   
+    
 
+  } #Done with all alpha's
 
+  #Best estimates of N
+  if(sum(AcceptInd) == 0){
+    Bestix = 1
+    Best.N = NEST[1]
+  }else{
+    Bestix = which.max(AcceptInd==1)
+    Best.N = NEST[Bestix]
+  }
+  SettingsChar = paste0("GAMMAAB",as.character(gamma.prior.a),"_",as.character(gamma.prior.b),"MCMC",as.character(iter),"BURN",as.character(burnin))
+  logfileName = paste0(config$DUMP_LOCATION[[k]],config$NAME[[k]],SettingsChar,'.txt')
 
-    output.data = cbind(var.name,var.est, var.stat )
-    output.data = data.frame(output.data)
-    output.data$var.est = as.numeric(output.data$var.est)
-    output.data$var.stat = as.numeric(output.data$var.stat)
-    write.csv(output.data, config$SUMMARY_DATA_LOCATION[[k]])
+  ix = which(PosteriorSampleListN[[Bestix]]== Best.N)
+  BestA = PosteriorSampleListA[[alphanumber]][ix,]
+  BestL = PosteriorSampleListL[[alphanumber]][ix,]
+
+  fileConn    = file(logfileName)
+  SettingLine = paste('We run the following experiment setting:')
+  Gammaline   = paste('Our Gamma prior is given as Gamma', as.character(gamma.prior.a),'and', as.character(gamma.prior.b))
+  MCMCline    = paste('We run MCMC for',as.character(iter),'iterations, with a burn in of',as.character(burnin))
+  Alphaline   = paste('The best alpha', as.character(config$ALPHA[Bestix]))
+  Nline       = paste('The best N is', as.character(Best.N))
+  Aline       = 'The best A estimates are'
+  Lline       = 'The best lambda estimates are '
+  for(i in 1:Best.N){
+    Aline = paste(Aline, as.character(mean(BestA[,i])), "(",as.character(sd(BestA[,i])),")",",")
+    Lline = paste(Lline, as.character(mean(BestL[,i])), "(",as.character(sd(BestL[,i])),")",",")
+  }
+
+  writeLines(c(SettingLine, Gammaline, MCMCline,Alphaline,Nline,Aline, Lline), fileConn)
+  close(fileConn)
+
+  CSVFileName = paste0(config$DUMP_LOCATION[[k]],config$NAME[[k]],SettingsChar,'FullEst.csv')
+
+  output.data = cbind(var.name,var.est, var.stat,var.up,var.low,var.alpha)
+  output.data = data.frame(output.data)
+  output.data$var.est  = as.numeric(output.data$var.est)
+  output.data$var.stat = as.numeric(output.data$var.stat)
+  output.data$var.up   = as.numeric(output.data$var.up )
+  output.data$var.low  = as.numeric(output.data$var.low)
+  output.data$var.alpha= as.numeric(output.data$var.alpha)
+
+  write.csv(output.data, CSVFileName)
+
+  #Full Data 
+  Alpha = config$ALPHA
+  FullDataName = paste0(config$DUMP_LOCATION[[k]],config$NAME[[k]],SettingsChar,'FullData.RData')
+  save(PosteriorSampleListN, PosteriorSampleListA, PosteriorSampleListL,Alpha, file = FullDataName)
   
-    if(config$DUMP){
-      save(Posterior.sampes.N, Posterior.samples.A,Posterior.samples.lambda,  file = config$DUMP_LOCATION[[k]])
-    }
-
 
 } 
 

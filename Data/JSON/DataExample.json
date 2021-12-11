@@ -7,15 +7,11 @@
     "GAMMAPRIORA": 0.1,
     "GAMMAPRIORB": 1, 
     "ALPHA": [0.001, 0.1],
-    "MCMCITER": 5000,
-    "BURNIN":1000,
-    "SUMMARY_DATA_LOCATION":[
-        "Data/Output/A0_1_0_1AND1.csv"],
-    "LIKELIHOOD_PLOT":[
-        "Data/Output/A0_1_0_1AND1.pdf"],
-    "DUMP":1,
+    "MCMCITER": 1000,
+    "BURNIN":200,
     "DUMP_LOCATION":[
-        "Data/Output/A0_1_0_1AND1.RData"],
+        "Data/Output/"],
+    "NSD":1.00,
     "SEPARATION_FACTOR":[1.00],
     "SEED":2021
 }

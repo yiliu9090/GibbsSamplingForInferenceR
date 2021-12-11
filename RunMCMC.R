@@ -373,7 +373,6 @@ for(k in 1:length(config$DATA_LOCATION)){
   close(fileConn)
 
   CSVFileName = paste0(config$DUMP_LOCATION[[k]],config$NAME[[k]],SettingsChar,'FullEst.csv')
-  print(CSVFileName)
   output.data = cbind(var.name,var.est, var.stat,var.up,var.low,var.alpha)
   output.data = data.frame(output.data)
   output.data$var.est  = as.numeric(output.data$var.est)

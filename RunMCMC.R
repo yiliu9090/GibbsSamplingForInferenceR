@@ -395,9 +395,8 @@ for(k in 1:length(config$DATA_LOCATION)){
   #Full Data 
   Alpha = config$ALPHA
   FullDataName = paste0(config$DUMP_LOCATION[[k]],config$NAME[[k]],SettingsChar,'FullData.RData')
-  save(PosteriorSampleListN, PosteriorSampleListA, PosteriorSampleListL,Alpha, file = FullDataName)
-  BestDataName = paste0(config$DUMP_LOCATION[[k]],config$NAME[[k]],SettingsChar,'BestData.RData')
-  save(PosteriorSampleListN[[Bestix]], PosteriorSampleListA[[Bestix]], PosteriorSampleListL[[Bestix]],Alpha, file = FullDataName)
+  save(PosteriorSampleListN, PosteriorSampleListA, PosteriorSampleListL,Alpha,Bestix,file = FullDataName)
+
   
 
 } 

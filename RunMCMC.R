@@ -309,10 +309,10 @@ for(k in 1:length(config$DATA_LOCATION)){
     PosteriorSampleListL[[alphanumber]] = Posterior.samples.lambda
 
     AcceptInd = 1
-    checkupper = mean(Posterior.samples.lambda[ix,i]) + nsd*sd(Posterior.samples.lambda[ix,i])
-    checklower = mean(Posterior.samples.lambda[ix,i]) - nsd*sd(Posterior.samples.lambda[ix,i]) 
+    checkupper = mean(Posterior.samples.lambda[ix,1]) + nsd*sd(Posterior.samples.lambda[ix,1])
+    checklower = mean(Posterior.samples.lambda[ix,1]) - nsd*sd(Posterior.samples.lambda[ix,1]) 
 
-    if(N.est > 2){
+    if(N.est >= 2){
       #compute upper and lower bound 
       for(i in 2:N.est){
         checkupper = c(checkupper, mean(Posterior.samples.lambda[ix,i]) + nsd*sd(Posterior.samples.lambda[ix,i]))
@@ -331,7 +331,6 @@ for(k in 1:length(config$DATA_LOCATION)){
       }
     }
 
-
     Accepted[alphanumber] = AcceptInd
     SettingsChar = paste0("GAMMAAB",as.character(gamma.prior.a),"_",as.character(gamma.prior.b),"ALPHA",as.character(alpha),"MCMC",as.character(iter),"BURN",as.character(burnin),"HIST")
     hist_name = paste0(config$DUMP_LOCATION[[k]],config$NAME[[k]],SettingsChar,'.pdf' )
@@ -341,15 +340,17 @@ for(k in 1:length(config$DATA_LOCATION)){
     
 
   } #Done with all alpha's
-
   #Best estimates of N
   if(sum(Accepted) == 0){
+    AlphaTooLarge = 1
     Bestix = 1
     Best.N = NEST[1]
   }else{
-    Bestix = which.max(Accepted==1)
+    AlphaTooLarge = 0
+    Bestix = which.max(NEST*Accepted)
     Best.N = NEST[Bestix]
   }
+
   SettingsChar = paste0("GAMMAAB",as.character(gamma.prior.a),"_",as.character(gamma.prior.b),"MCMC",as.character(iter),"BURN",as.character(burnin))
   logfileName = paste0(config$DUMP_LOCATION[[k]],config$NAME[[k]],SettingsChar,'.txt')
 
@@ -362,6 +363,9 @@ for(k in 1:length(config$DATA_LOCATION)){
   Gammaline   = paste('Our Gamma prior is given as Gamma', as.character(gamma.prior.a),'and', as.character(gamma.prior.b))
   MCMCline    = paste('We run MCMC for',as.character(iter),'iterations, with a burn in of',as.character(burnin))
   Alphaline   = paste('The best alpha', as.character(config$ALPHA[Bestix]))
+  if(AlphaTooLarge){
+    Alphaline   = paste(Alphaline,"\n However, alpha proposal is too large so only the smallest alpha value taken")
+  }
   Nline       = paste('The best N is', as.character(Best.N),"(",as.character(mean(PosteriorSampleListN[[Bestix]]== (Best.N+1))),")")
   Aline       = 'The best A estimates are'
   Lline       = 'The best lambda estimates are '
@@ -384,10 +388,16 @@ for(k in 1:length(config$DATA_LOCATION)){
 
   write.csv(output.data, CSVFileName)
 
+  BestCSVFileName = paste0(config$DUMP_LOCATION[[k]],config$NAME[[k]],SettingsChar,'BestEst.csv')
+  ixforbest = which(output.data$var.alpha==config$ALPHA[Bestix])
+  write.csv(output.data[ixforbest,], BestCSVFileName)
+
   #Full Data 
   Alpha = config$ALPHA
   FullDataName = paste0(config$DUMP_LOCATION[[k]],config$NAME[[k]],SettingsChar,'FullData.RData')
   save(PosteriorSampleListN, PosteriorSampleListA, PosteriorSampleListL,Alpha, file = FullDataName)
+  BestDataName = paste0(config$DUMP_LOCATION[[k]],config$NAME[[k]],SettingsChar,'BestData.RData')
+  save(PosteriorSampleListN[[Bestix]], PosteriorSampleListA[[Bestix]], PosteriorSampleListL[[Bestix]],Alpha, file = FullDataName)
   
 
 } 

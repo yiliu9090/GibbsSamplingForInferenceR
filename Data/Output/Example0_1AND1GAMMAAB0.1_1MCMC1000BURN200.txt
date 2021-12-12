@@ -1,7 +1,7 @@
 We run the following experiment setting:
 Our Gamma prior is given as Gamma 0.1 and 1
 We run MCMC for 1000 iterations, with a burn in of 200
-The best alpha 0.001
-The best N is 1 ( 0.79125 )
-The best A estimates are 0.999999969210129 ( 7.52395231579401e-07 ) ,
-The best lambda estimates are  0.183848960436911 ( 0.00132396082519846 ) ,
+The best alpha 9e-04
+The best N is 2 ( 0.56 )
+The best A estimates are 0.501194352961399 ( 0.0389935998007353 ) , 0.498805567498787 ( 0.0389935902759788 ) ,
+The best lambda estimates are  0.957593859048498 ( 0.0669576827405806 ) , 0.101696302736096 ( 0.00678340557415997 ) ,

@@ -2,4 +2,4 @@
  
 ## Summary 
 
-This is 
+This is a software for inferences using Bayesian non-parametric.

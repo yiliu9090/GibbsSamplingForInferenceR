@@ -347,7 +347,8 @@ for(k in 1:length(config$DATA_LOCATION)){
     Best.N = NEST[1]
   }else{
     AlphaTooLarge = 0
-    Bestix = which.max(NEST*Accepted)
+    BestCandidate = which(NEST*Accepted == max(NEST*Accepted))
+    Bestix = max(BestCandidate)
     Best.N = NEST[Bestix]
   }
 

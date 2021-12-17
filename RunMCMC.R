@@ -364,6 +364,12 @@ for(k in 1:length(config$DATA_LOCATION)){
   Gammaline   = paste('Our Gamma prior is given as Gamma', as.character(gamma.prior.a),'and', as.character(gamma.prior.b))
   MCMCline    = paste('We run MCMC for',as.character(iter),'iterations, with a burn in of',as.character(burnin))
   Alphaline   = paste('The best alpha', as.character(config$ALPHA[Bestix]))
+  Alphaline   = paste(Alphaline,"\n We tried the following alpha \n")
+  
+  for(a in 1:AlphaSize){
+    Alphaline   = paste(Alphaline,as.character( config$ALPHA[[a]][[1]]) )
+  }
+  
   if(AlphaTooLarge){
     Alphaline   = paste(Alphaline,"\n However, alpha proposal is too large so only the smallest alpha value taken")
   }

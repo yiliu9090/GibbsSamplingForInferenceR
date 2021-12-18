@@ -54,12 +54,12 @@ for(k in 1:length(config$DATA_LOCATION)){
   PosteriorSampleListN = list()
   PosteriorSampleListA = list()
   PosteriorSampleListL = list()
-
+  PosteriorLikelihood  = list()
+  MaxLikelihood = -Inf
+  MinLikelihood = Inf
   Accepted = rep(0,AlphaSize)
 
-  #Likelihood data 
-  likelihood_changes = NULL
-
+  
   #
   NEST     = NULL #This is to keep an record of all the N.estimates
   var.name = NULL
@@ -68,8 +68,10 @@ for(k in 1:length(config$DATA_LOCATION)){
   var.up   = NULL
   var.low  = NULL
   var.alpha= NULL
-
+  varl     = NULL
   for(alphanumber in 1:AlphaSize){
+    #Likelihood data 
+    likelihood_changes = NULL
 
     #Initialize the value 
     N.Posterior = 1 
@@ -256,17 +258,14 @@ for(k in 1:length(config$DATA_LOCATION)){
 
     }#done with MCMC
 
-    #Summarize the data for that particular alpha
-    probcomput = rep(0,maxN)
-    SettingsChar = paste0("GAMMAAB",as.character(gamma.prior.a),"_",as.character(gamma.prior.b),"ALPHA",as.character(alpha),"MCMC",as.character(iter),"BURN",as.character(burnin),"LIKELIHOOD")
-    likelihoodplot_name = paste0(config$DUMP_LOCATION[[k]],config$NAME[[k]],SettingsChar,'.pdf' )
-
-    #Likelihood plots
-    pdf(likelihoodplot_name)
-    plot((1:length(likelihood_changes))*100,likelihood_changes)
-    dev.off()
+    PosteriorLikelihood[[alphanumber]] = likelihood_changes
+    MaxLikelihood = max(c(max(likelihood_changes, MaxLikelihood)))
+    MinLikelihood = min(c(min(likelihood_changes, MinLikelihood)))
 
     #find the right set of values
+    #Summarize the data for that particular alpha
+    probcomput = rep(0,maxN)
+
     for(i in 1:maxN){
       probcomput[i] = mean(Posterior.sampes.N==i)
     }
@@ -295,6 +294,7 @@ for(k in 1:length(config$DATA_LOCATION)){
     }
     lambda_samples = NULL 
     for(i in 1:N.est){
+      varl     = c(varl, Posterior.samples.lambda[ix,i])
       lambda_samples = c(lambda_samples, Posterior.samples.lambda[ix,i]) #lambda samples
       var.name = c(var.name, paste0("Lambda", as.character(i)))
       var.est  = c(var.est , mean(Posterior.samples.lambda[ix,i]))
@@ -332,15 +332,20 @@ for(k in 1:length(config$DATA_LOCATION)){
     }
 
     Accepted[alphanumber] = AcceptInd
-    SettingsChar = paste0("GAMMAAB",as.character(gamma.prior.a),"_",as.character(gamma.prior.b),"ALPHA",as.character(alpha),"MCMC",as.character(iter),"BURN",as.character(burnin),"HIST")
-    hist_name = paste0(config$DUMP_LOCATION[[k]],config$NAME[[k]],SettingsChar,'.pdf' )
-    pdf(hist_name)
-    hist(lambda_samples,breaks= 100)
-    dev.off()
-    
+
+    SettingsChar = paste0("GAMMAAB",as.character(gamma.prior.a),"_",as.character(gamma.prior.b),"MCMC",as.character(iter),"BURN",as.character(burnin))
+    logfileName = paste0(config$DUMP_LOCATION[[k]],config$NAME[[k]],SettingsChar,'progress.txt')
+    fileConn    = file(logfileName)
+    progressline = paste("Complete ", as.character(alphanumber/AlphaSize*100), "%\n")
+    writeLines(progressline, fileConn)
+  
+
 
   } #Done with all alpha's
   #Best estimates of N
+  
+  close(fileConn)
+
   if(sum(Accepted) == 0){
     AlphaTooLarge = 1
     Bestix = 1
@@ -351,6 +356,37 @@ for(k in 1:length(config$DATA_LOCATION)){
     Bestix = max(BestCandidate)
     Best.N = NEST[Bestix]
   }
+
+  #HISTOGRAM
+  maxlim = quantile(varl, 0.95)
+
+  #all plotting
+
+  for(a in 1:AlphaSize){
+    New.N = NEST[a]
+    alpha = config$ALPHA[[a]][[1]]
+    lambda_s = NULL 
+    ix = which(PosteriorSampleListN[[a]]== (a+1))
+    for(l in 1:New.N){
+      lambda_s = c(lambda_s, PosteriorSampleListL[[a]][ix,l])
+    }
+    SettingsChar = paste0("GAMMAAB",as.character(gamma.prior.a),"_",as.character(gamma.prior.b),"ALPHA",as.character(alpha),"MCMC",as.character(iter),"BURN",as.character(burnin),"HIST")
+    hist_name = paste0(config$DUMP_LOCATION[[k]],config$NAME[[k]],SettingsChar,'.pdf' )
+    pdf(hist_name)
+    hist_main = paste('Histogram, Alpha = ', as.character(alpha))
+    hist(lambda_s, breaks= 100 , main = hist_main, xlab = "Lambdas", xlim= c(0, maxlim))
+    dev.off()
+
+    SettingsChar = paste0("GAMMAAB",as.character(gamma.prior.a),"_",as.character(gamma.prior.b),"ALPHA",as.character(alpha),"MCMC",as.character(iter),"BURN",as.character(burnin),"LIKELIHOOD")
+    likelihoodplot_name = paste0(config$DUMP_LOCATION[[k]],config$NAME[[k]],SettingsChar,'.pdf' )
+    #Likelihood plots
+    pdf(likelihoodplot_name)
+    likelihood_name = paste("Likelihood plot","Alpha = ", as.character(alpha))
+    likelihood_changes = PosteriorLikelihood[[a]]
+    plot(((1:length(likelihood_changes))*100),likelihood_changes,main = likelihood_name, xlab = 'Number of iterations', ylab = "Likelihood", ylim = c(MinLikelihood,MaxLikelihood))
+    dev.off()
+  }
+
 
   SettingsChar = paste0("GAMMAAB",as.character(gamma.prior.a),"_",as.character(gamma.prior.b),"MCMC",as.character(iter),"BURN",as.character(burnin))
   logfileName = paste0(config$DUMP_LOCATION[[k]],config$NAME[[k]],SettingsChar,'.txt')
@@ -367,9 +403,9 @@ for(k in 1:length(config$DATA_LOCATION)){
   Alphaline   = paste(Alphaline,"\n We tried the following alpha \n")
   
   for(a in 1:AlphaSize){
-    Alphaline   = paste(Alphaline,as.character( config$ALPHA[[a]][[1]]) )
+    Alphaline   = paste(Alphaline,as.character( config$ALPHA[[a]][[1]]),"," )
   }
-  
+
   if(AlphaTooLarge){
     Alphaline   = paste(Alphaline,"\n However, alpha proposal is too large so only the smallest alpha value taken")
   }
@@ -383,6 +419,8 @@ for(k in 1:length(config$DATA_LOCATION)){
 
   writeLines(c(SettingLine, Gammaline, MCMCline,Alphaline,Nline,Aline, Lline), fileConn)
   close(fileConn)
+
+  
 
   CSVFileName = paste0(config$DUMP_LOCATION[[k]],config$NAME[[k]],SettingsChar,'FullEst.csv')
   output.data = cbind(var.name,var.est, var.stat,var.up,var.low,var.alpha)

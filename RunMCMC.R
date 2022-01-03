@@ -72,6 +72,7 @@ for(k in 1:length(config$DATA_LOCATION)){
   var.est.l= NULL
   var.est.N= NULL
   var.est.a= NULL
+  var.est.s= NULL #standard deviation
   for(alphanumber in 1:AlphaSize){
     #Likelihood data 
     likelihood_changes = NULL
@@ -308,6 +309,7 @@ for(k in 1:length(config$DATA_LOCATION)){
       var.est.l = c(var.est.l, mean(Posterior.samples.lambda[ix,i]))
       var.est.N = c(var.est.N, N.est)
       var.est.a = c(var.est.a, alpha)
+      var.est.s = c(var.est.s, sd(Posterior.samples.lambda[ix,i]))
     }
 
     PosteriorSampleListN[[alphanumber]] = Posterior.sampes.N
@@ -406,13 +408,26 @@ for(k in 1:length(config$DATA_LOCATION)){
   #var.est.a
   #var.est.l
   #var.est.N
+  #var.est.s
   SettingsChar = paste0("GAMMAAB",as.character(gamma.prior.a),"_",as.character(gamma.prior.b),"ALPHA",as.character(alpha),"MCMC",as.character(iter),"BURN",as.character(burnin),"LVSN")
   LVNplot_name = paste0(config$DUMP_LOCATION[[k]],config$NAME[[k]],SettingsChar,'.pdf' )
   pdf(LVNplot_name)
   LVN_name = "Lambda Estimates Against N"
-  plot(var.est.l ~ jitter(var.est.N, 1), pch = 15, main = LVN_name, xlab = "N", ylab = "Lambdas", sub = SettingsChar)
+  jittN = jitter(var.est.N, 1)
+  plot(var.est.l ~ jittN, pch = 15, main = LVN_name, xlab = "N", ylab = "Lambdas", sub = SettingsChar)
+  arrows(x0=jittN, y0=var.est.l-nsd*var.est.s, x1=jittN, y1=var.est.l+nsd*var.est.s, code=3, angle=90, length=0.1)
   dev.off()
 
+  dis.a = min(abs(diff(log(Alpha))))
+
+  SettingsChar = paste0("GAMMAAB",as.character(gamma.prior.a),"_",as.character(gamma.prior.b),"ALPHA",as.character(alpha),"MCMC",as.character(iter),"BURN",as.character(burnin),"LVSA")
+  LVNplot_name = paste0(config$DUMP_LOCATION[[k]],config$NAME[[k]],SettingsChar,'.pdf' )
+  pdf(LVNplot_name)
+  LVN_name = "Lambda Estimates Against A"
+  jittA = jitter(var.est.a, dis.a)
+  plot(var.est.l ~ jittA, pch = 15, main = LVN_name, xlab = "log(alpha)", ylab = "Lambdas", sub = SettingsChar)
+  arrows(x0=jittA, y0=var.est.l-nsd*var.est.s, x1=jittN, y1=var.est.l+nsd*var.est.s, code=3, angle=90, length=dis.a/2)
+  dev.off()
 
 
 

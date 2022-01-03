@@ -69,6 +69,9 @@ for(k in 1:length(config$DATA_LOCATION)){
   var.low  = NULL
   var.alpha= NULL
   varl     = NULL
+  var.est.l= NULL
+  var.est.N= NULL
+  var.est.a= NULL
   for(alphanumber in 1:AlphaSize){
     #Likelihood data 
     likelihood_changes = NULL
@@ -302,6 +305,9 @@ for(k in 1:length(config$DATA_LOCATION)){
       var.up   = c(var.up,   mean(Posterior.samples.lambda[ix,i]) + nsd*sd(Posterior.samples.lambda[ix,i]))
       var.low  = c(var.low,  mean(Posterior.samples.lambda[ix,i]) - nsd*sd(Posterior.samples.lambda[ix,i]))
       var.alpha = c(var.alpha, alpha)
+      var.est.l = c(var.est.l, mean(Posterior.samples.lambda[ix,i]))
+      var.est.N = c(var.est.N, N.est)
+      var.est.a = c(var.est.a, alpha)
     }
 
     PosteriorSampleListN[[alphanumber]] = Posterior.sampes.N
@@ -338,13 +344,12 @@ for(k in 1:length(config$DATA_LOCATION)){
     fileConn    = file(logfileName)
     progressline = paste("Complete ", as.character(alphanumber/AlphaSize*100), "%\n")
     writeLines(progressline, fileConn)
-  
-
+    close(fileConn)
 
   } #Done with all alpha's
   #Best estimates of N
   
-  close(fileConn)
+  
 
   if(sum(Accepted) == 0){
     AlphaTooLarge = 1
@@ -358,15 +363,17 @@ for(k in 1:length(config$DATA_LOCATION)){
   }
 
   #HISTOGRAM
-  maxlim = quantile(varl, 0.95)
+  maxlim = max(varl)
 
   #all plotting
-
+  AlphaCollection = NULL
   for(a in 1:AlphaSize){
+    print(a)
     New.N = NEST[a]
     alpha = config$ALPHA[[a]][[1]]
+    AlphaCollection = c(AlphaCollection, alpha)
     lambda_s = NULL 
-    ix = which(PosteriorSampleListN[[a]]== (a+1))
+    ix = which(PosteriorSampleListN[[a]]== (New.N+1))
     for(l in 1:New.N){
       lambda_s = c(lambda_s, PosteriorSampleListL[[a]][ix,l])
     }
@@ -374,7 +381,7 @@ for(k in 1:length(config$DATA_LOCATION)){
     hist_name = paste0(config$DUMP_LOCATION[[k]],config$NAME[[k]],SettingsChar,'.pdf' )
     pdf(hist_name)
     hist_main = paste('Histogram, Alpha = ', as.character(alpha))
-    hist(lambda_s, breaks= 100 , main = hist_main, xlab = "Lambdas", xlim= c(0, maxlim))
+    hist(lambda_s, breaks= 100 , main = hist_main, xlab = "Lambdas", xlim= c(0, maxlim) ,sub = SettingsChar)
     dev.off()
 
     SettingsChar = paste0("GAMMAAB",as.character(gamma.prior.a),"_",as.character(gamma.prior.b),"ALPHA",as.character(alpha),"MCMC",as.character(iter),"BURN",as.character(burnin),"LIKELIHOOD")
@@ -383,9 +390,30 @@ for(k in 1:length(config$DATA_LOCATION)){
     pdf(likelihoodplot_name)
     likelihood_name = paste("Likelihood plot","Alpha = ", as.character(alpha))
     likelihood_changes = PosteriorLikelihood[[a]]
-    plot(((1:length(likelihood_changes))*100),likelihood_changes,main = likelihood_name, xlab = 'Number of iterations', ylab = "Likelihood", ylim = c(MinLikelihood,MaxLikelihood))
+    plot(((1:length(likelihood_changes))*100),likelihood_changes,main = likelihood_name, xlab = 'Number of iterations', ylab = "Likelihood", ylim = c(MinLikelihood,MaxLikelihood), sub = SettingsChar)
     dev.off()
   }
+
+
+  #log N against log alpha plot 
+  SettingsChar = paste0("GAMMAAB",as.character(gamma.prior.a),"_",as.character(gamma.prior.b),"ALPHA",as.character(alpha),"MCMC",as.character(iter),"BURN",as.character(burnin),"NVSAL")
+  NVSAplot_name = paste0(config$DUMP_LOCATION[[k]],config$NAME[[k]],SettingsChar,'.pdf' )
+  pdf(NVSAplot_name)
+  NVSA_name = "log(N) Against log(alpha)"
+  plot(log10(AlphaCollection),log10(NEST), main = NVSA_name, xlab = 'log(alpha)', ylab = "log(N)", sub = SettingsChar)
+  dev.off()
+  #JITTERING PLOTS
+  #var.est.a
+  #var.est.l
+  #var.est.N
+  SettingsChar = paste0("GAMMAAB",as.character(gamma.prior.a),"_",as.character(gamma.prior.b),"ALPHA",as.character(alpha),"MCMC",as.character(iter),"BURN",as.character(burnin),"LVSN")
+  LVNplot_name = paste0(config$DUMP_LOCATION[[k]],config$NAME[[k]],SettingsChar,'.pdf' )
+  pdf(LVNplot_name)
+  LVN_name = "Lambda Estimates Against N"
+  plot(var.est.l ~ jitter(var.est.N, 1), pch = 15, main = LVN_name, xlab = "N", ylab = "Lambdas", sub = SettingsChar)
+  dev.off()
+
+
 
 
   SettingsChar = paste0("GAMMAAB",as.character(gamma.prior.a),"_",as.character(gamma.prior.b),"MCMC",as.character(iter),"BURN",as.character(burnin))
@@ -441,8 +469,6 @@ for(k in 1:length(config$DATA_LOCATION)){
   Alpha = config$ALPHA
   FullDataName = paste0(config$DUMP_LOCATION[[k]],config$NAME[[k]],SettingsChar,'FullData.RData')
   save(PosteriorSampleListN, PosteriorSampleListA, PosteriorSampleListL,Alpha,Bestix,file = FullDataName)
-
-  
 
 } 
 

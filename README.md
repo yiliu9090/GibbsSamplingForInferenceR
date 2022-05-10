@@ -58,7 +58,7 @@ We will define each term here.
 
 
 
-This is the data file with the timings. `Example_0_1AND1.txt` is an example
+This is the data file with the timings. `Data/ExampleData/Example_0_1AND1.txt` is an example
 
     1.648249
     11.86002

@@ -16,7 +16,9 @@ This software is exists as a docker container.
 
 ## Running the algorithm 
 
-To run this algorithm, one needs to have a `.json` file and `.txt` file. All the 
+To run this algorithm, one needs to have a `.json` file and `.txt` file. All the configurations are in `.json` file. 
+In this system, we have an example `DataExample.json` file. 
+We will illustrate how to configure this using the following example. 
 
     { 
     "NAME":["Example0_1AND1"],
@@ -37,6 +39,20 @@ To run this algorithm, one needs to have a `.json` file and `.txt` file. All the
     "SEPARATION_FACTOR":[1.00],
     "SEED":2021
     }
+
+We will define each term here. 
+`"NAME"`: list of Names, multiple names 
+`"DATA_LOCATION"`: list of data location of data with respect to the container 
+`"MAXN"`: Maximumn N_0
+`"GAMMAPRIORA"`: a from prior Gamma(a,b)
+`"GAMMAPRIORB"`: b from prior Gamma(a,b)
+`"ALPHA"`: list of alpha to scan through 
+`"MCMCITER"`: Number of MCMC iteration to run through
+`"BURNIN"`: Number of samples thrown away as burn in 
+`"DUMP_LOCATION"`: list of folders to put all the output data 
+`"NSD"`: Number of standard deviation before overfitting
+`"SEPARATION_FACTOR"`: the minimum value for \frac{\lambda_i}{\lambda_j} if \lambda_i > \lambda_j
+`"SEED"`: Random Seed
 
 
 

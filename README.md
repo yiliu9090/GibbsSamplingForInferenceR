@@ -41,6 +41,7 @@ To run this algorithm, one needs to have a `.json` file and `.txt` file. All the
 
 
 This is the data file. 
+
     1.648249
     11.86002
     0.278794

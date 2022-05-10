@@ -16,6 +16,8 @@ This software is exists as a docker container.
 
 ## Running the algorithm 
 
+### Inputs 
+
 To run this algorithm, one needs to have a `.json` file and `.txt` file. All the configurations are in `.json` file. 
 In this system, we have an example `DataExample.json` file. 
 We will illustrate how to configure this using the following example. 
@@ -66,7 +68,20 @@ This is the data file. `Example_0_1AND1.txt` is an example
     8.294041
     ...
 
+### Running the container 
 With this two files ready, one can then run the code using the following docker command 
 
-    docker container run -d [name of the container] -v [data location in your pc]:[data location in the container] [json file]
+    docker container run -d --rm -v [data location in your pc]:[data location in the container] [name of the container] [json file location in the container]
 
+For example, lets call our container `gitgibbstrial`
+
+Run `docker container run -d --rm -v /[your file location]/GibbsSamplingForInferenceR/Data:/Workspace/Data gitgibbstrial Data/JSON/DataExample.json`
+
+If one is not familar with docker commands, what one can do is to just use this line to run and change the file content accordingly.
+
+### Outputs 
+
+- Plot of likelihood against iteration number for each $\alpha$
+- Plot of the histogram of the posterior $\lambda$ for each $\alpha$
+- Plot of the $\lambda$ estimates against $N$
+- Plot of $\lambda$ estimates against $\alpha$ and $\log(\alpha)$

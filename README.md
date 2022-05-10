@@ -51,7 +51,7 @@ We will define each term here.
 - `"BURNIN"`: Number of samples thrown away as burn in 
 - `"DUMP_LOCATION"`: list of folders to put all the output data 
 - `"NSD"`: Number of standard deviation before overfitting
-- `"SEPARATION_FACTOR"`: the minimum value for \frac{\lambda_i}{\lambda_j} if \lambda_i > \lambda_j
+- `"SEPARATION_FACTOR"`: the minimum value for $\frac{\lambda_i}{\lambda_j}$ if $\lambda_i > \lambda_j$
 - `"SEED"`: Random Seed
 
 

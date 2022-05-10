@@ -56,7 +56,7 @@ We will define each term here.
 
 
 
-This is the data file. 
+This is the data file. `Example_0_1AND1.txt` is an example
 
     1.648249
     11.86002
@@ -65,4 +65,8 @@ This is the data file.
     7.066532
     8.294041
     ...
+
+With this two files ready, one can then run the code using the following docker command 
+
+    docker container run -d [name of the container] -v [data location in your pc]:[data location in the container] [json file]
 

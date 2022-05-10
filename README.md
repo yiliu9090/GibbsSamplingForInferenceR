@@ -19,7 +19,7 @@ This software is exists as a docker container.
 ### Inputs 
 
 To run this algorithm, one needs to have a `.json` file and `.txt` file. All the configurations are in `.json` file. 
-In this system, we have an example `DataExample.json` file. 
+In this system, we have an example `Data/JSON/DataExample.json` file. 
 We will illustrate how to configure this using the following example. 
 
     { 

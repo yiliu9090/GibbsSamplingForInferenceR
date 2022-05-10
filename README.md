@@ -41,18 +41,18 @@ We will illustrate how to configure this using the following example.
     }
 
 We will define each term here. 
-`"NAME"`: list of Names, multiple names 
-`"DATA_LOCATION"`: list of data location of data with respect to the container 
-`"MAXN"`: Maximumn N_0
-`"GAMMAPRIORA"`: a from prior Gamma(a,b)
-`"GAMMAPRIORB"`: b from prior Gamma(a,b)
-`"ALPHA"`: list of alpha to scan through 
-`"MCMCITER"`: Number of MCMC iteration to run through
-`"BURNIN"`: Number of samples thrown away as burn in 
-`"DUMP_LOCATION"`: list of folders to put all the output data 
-`"NSD"`: Number of standard deviation before overfitting
-`"SEPARATION_FACTOR"`: the minimum value for \frac{\lambda_i}{\lambda_j} if \lambda_i > \lambda_j
-`"SEED"`: Random Seed
+- `"NAME"`: list of Names, multiple names 
+- `"DATA_LOCATION"`: list of data location of data with respect to the container 
+- `"MAXN"`: Maximumn N_0
+- `"GAMMAPRIORA"`: a from prior Gamma(a,b)
+- `"GAMMAPRIORB"`: b from prior Gamma(a,b)
+- `"ALPHA"`: list of alpha to scan through 
+- `"MCMCITER"`: Number of MCMC iteration to run through
+- `"BURNIN"`: Number of samples thrown away as burn in 
+- `"DUMP_LOCATION"`: list of folders to put all the output data 
+- `"NSD"`: Number of standard deviation before overfitting
+- `"SEPARATION_FACTOR"`: the minimum value for \frac{\lambda_i}{\lambda_j} if \lambda_i > \lambda_j
+- `"SEED"`: Random Seed
 
 
 

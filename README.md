@@ -16,6 +16,8 @@ This software is exists as a docker container.
 
 ## Running the algorithm 
 
+To run this algorithm, one needs to have a `.json` file and `.txt` file. All the 
+
     { 
     "NAME":["Example0_1AND1"],
     "DATA_LOCATION":[
@@ -35,3 +37,15 @@ This software is exists as a docker container.
     "SEPARATION_FACTOR":[1.00],
     "SEED":2021
     }
+
+
+
+This is the data file. 
+    1.648249
+    11.86002
+    0.278794
+    2.419705
+    7.066532
+    8.294041
+    ...
+
